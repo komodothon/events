@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+
+{% block content %}
+    <div class="container" style="padding-top: 100px;">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-lg">
+                    <div class="card-header text-center bg-primary text-white">
+                        <h1 class="h4">{{ event['event_name'] }}</h1>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="lead">{{ event['event_description'] }}</p>
+                        <hr>
+                        <p><strong>Date:</strong> {{ event['event_date'] }}</p>
+                        <p><strong>Location:</strong> {{ event['event_location'] }}</p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <!-- Optional buttons or links could go here -->
+                        <a href="/" class="btn btn-secondary">Back to Events</a>
+                        <a href="/register" class="btn btn-secondary">Register</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

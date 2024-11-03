@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block content %}
+    <!-- <div class="container my-4 pt-5" style="max-width: 500px; justify-self: left; margin-left: 50px;">
+        <form class="container-form" action="{{ url_for ('login') }}" method="POST">
+            <div class="mb-3">
+                <label class="form-label" for="username">Username:</label>
+                <input class="form-control" id="username" type="text" name="username" 
+                        placeholder="Enter username" autocomplete="off" autofocus required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="password">Password:</label>
+                <input class="form-control" id="password" type="password" 
+                        name="user_password">
+            </div>
+
+            <div class="d-grid">
+                <input class="btn btn-primary" type="submit" value="Login">
+            </div>
+        </form>
+
+    </div> -->
+
+
+    <div class="container">
+        <div class="row" style="max-width: 1000px; padding-top: 80px;">
+            <!-- First Form -->
+            <div class="col-md-6" style="border-radius: 10px;">
+                <form class="p-3 border rounded-3 shadow" action="{{ url_for('login') }}" method="POST">
+                    <h3>Login</h3>
+                    <div class="mb-3">
+                        <label class="form-label" for="username">Username:</label>
+                        <input id="username" class="form-control" type="text"name="username" 
+                                placeholder="Enter username"autocomplete="off" autofocus required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Password:</label>
+                        <input id="password" class="form-control" type="password" name="user_password" placeholder="Enter password" required>
+                    </div>
+                    <div class="d-grid">
+                        <input class="btn btn-primary" type="submit" value="Login">
+                    </div>
+                </form>
+            </div>
+    
+            <!-- Second Form -->
+            <div class="col-md-6">
+                <form class="p-3 border rounded-3 shadow" action="{{ url_for('signup') }}" method="POST">
+                    <h3>Sign Up</h3>
+                    <div class="mb-3">
+                        <label class="form-label" for="new_username">Username:</label>
+                        <input id="new_username" class="form-control" type="text" name="new_username" 
+                                placeholder="Enter username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_email" class="form-label">Email:</label>
+                        <input id="new_email" class="form-control" type="email" name="new_email" placeholder="Enter email" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">Password:</label>
+                        <input id="new_password" class="form-control" type="password" name="new_password" placeholder="Enter password" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="re_enter_password" class="form-label">Re-enter Password:</label>
+                        <input id="re_enter_password" class="form-control" type="password" name="re_enter_password" placeholder="Re-Enter password" required>
+                    </div>
+
+                    <div class="d-grid">
+                        <input class="btn btn-secondary" type="submit" value="Sign Up">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

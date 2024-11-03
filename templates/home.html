@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Events
+{% endblock %}
+
+
+{% block header %}
+{% endblock %}
+
+
+{% block content %}
+    <!-- <a href="{{ url_for('create_event') }}">Add event</a> -->
+
+    <!-- <div class="container my-4">
+        <h2 class="text-center mb-4">Events List</h2>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        {% for header in headers %}
+                            <th scope="col">{{ header }}</th>
+                        {% endfor %}
+    
+                    </tr>
+    
+                </thead>
+                <tbody>
+                    {% for event in events_list %}
+                        <tr>
+                            {% for key, value in event.items() %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %} -->
+                    <!-- {% for event in events_list %}
+                        <tr>
+                            <td>{{ event['event_name'] }}</td>
+                            <td>{{ event['event_date'] }}</td>
+                            <td>{{ event['event_location'] }}</td>
+                            <td>{{ event['event_description'] }}</td>
+                        </tr>
+    
+                    {% endfor %} -->
+                <!-- </tbody>
+            </table>
+        </div>
+    </div> -->
+
+    <div class="container my-4 pt-5" style="max-width: 1000px;">
+        <h2>Logged in as {{ username }}</h2>
+
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for event in events_list %} 
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="static/image/pic_placeholder.png" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{{ url_for ('event_details', event_id=event['event_id']) }}">
+                                    {{ event['event_name'] }}
+                                </a>
+                            </h5>
+                          <!-- <p class="card-text">{{ event['event_description'] }}</p> -->
+                        </div>
+                        <div class="card-footer">
+                          <small class="text-body-secondary">{{ event['event_date'] }}</small><br>
+                          <small class="text-body-secondary">{{ event['event_location'] }}</small>
+
+                        </div>
+                      </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}
