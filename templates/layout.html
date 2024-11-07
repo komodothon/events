@@ -20,13 +20,13 @@
 
     <nav class="navbar fixed-top bg-dark navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Events Management System / Logo</a>
+            <a class="navbar-brand" href="{{ url_for('home') }}">Events Home / Logo</a>
 
             {% if username %}
                 <div class="d-flex">
-                    <a href="/my_events" class="btn btn-outline-light me-2">My Hosting Events</a>
-                    <a href="/my_registrations" class="btn btn-primary me-2">My Registered Events</a>
-                    <a href="/create_event" class="btn btn-primary me-2">Create an Event</a>
+                    <a href="{{ url_for('user_owned_events') }}" class="btn btn-outline-light me-2">My Hosting Events</a>
+                    <a href="{{ url_for('user_registered_events') }}" class="btn btn-primary me-2">My Registered Events</a>
+                    <a href="{{ url_for('create_event') }}" class="btn btn-primary me-2">Create an Event</a>
                     <a href="{{ url_for('logout')}}" class="btn btn-primary">Logout</a>
                 </div>
             {% else %}

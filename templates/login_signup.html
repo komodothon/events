@@ -55,11 +55,15 @@
                     <div class="mb-3">
                         <label class="form-label" for="new_username">Username:</label>
                         <input id="new_username" class="form-control" type="text" name="new_username" 
-                                placeholder="Enter username" required>
+                                placeholder="Enter username" required onkeyup="checkUsername()">
+                        <div id="username-feedback"></div>
                     </div>
                     <div class="mb-3">
                         <label for="new_email" class="form-label">Email:</label>
-                        <input id="new_email" class="form-control" type="email" name="new_email" placeholder="Enter email" required>
+                        <input id="new_email" class="form-control" type="email" name="new_email" 
+                                placeholder="Enter email" required onblur="checkEmail()">
+                        
+                                <div id="email-feedback"></div>
                     </div>
 
                     <div class="mb-3">
@@ -69,7 +73,9 @@
 
                     <div class="mb-3">
                         <label for="re_enter_password" class="form-label">Re-enter Password:</label>
-                        <input id="re_enter_password" class="form-control" type="password" name="re_enter_password" placeholder="Re-Enter password" required>
+                        <input id="re_enter_password" class="form-control" type="password" name="re_enter_password" 
+                                placeholder="Re-Enter password" required oninput="checkPassword()">
+                        <div id="password-feedback"></div>
                     </div>
 
                     <div class="d-grid">
@@ -79,4 +85,69 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function checkUsername() {
+            const new_username = document.getElementById("new_username").value;
+            const feedback = document.getElementById("username-feedback");
+
+            if (new_username.length < 3) {
+                feedback.textContent = "Username too short";
+                feedback.style.fontFamily = "Calibri";
+                feedback.style.color = "red";
+                return
+            }
+
+            fetch(`/check_username?username=${new_username}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.available) {
+                    feedback.textContent = "Username available!";
+                    feedback.style.fontFamily = "Calibri";
+                    feedback.style.color = "green"
+                } else {
+                    feedback.textContent = "Username taken";
+                    feedback.style.fontFamily = "Calibri";
+                    feedback.style.color = "red"
+                }
+            })
+            .catch(error => console.error("Error:", error))
+        }
+    </script>
+
+    <script>
+        function checkEmail() {
+            const newEmail = document.getElementById("new_email").value;
+            const emailFeedback = document.getElementById("email-feedback")
+
+            fetch(`/check_email?email=${newEmail}`)
+                .then(response => response.json())
+                .then(data => {
+                    emailFeedback.textContent = data.message;
+                    emailFeedback.style.color = data.valid? "green" : "red";
+                })
+                .catch(error => console.error("Error:", error))
+        }
+    </script>
+
+    <script>
+        function checkPassword() {
+            const newPassword = document.getElementById("new_password").value;
+            const reEnterPassword = document.getElementById("re_enter_password").value;
+            const passwordFeedback = document.getElementById("password-feedback");
+
+            if (reEnterPassword.length == 0) {
+                passwordFeedback.textContent = "";
+            } else if (newPassword === reEnterPassword) {
+                passwordFeedback.textContent = "Passwords match";
+                passwordFeedback.style.color = "green";
+            } else {
+                passwordFeedback.textContent = "Passwords don't match";
+                passwordFeedback.style.color = "red";
+            }
+            
+        }
+    </script>
+
+
 {% endblock %}
