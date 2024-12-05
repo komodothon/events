@@ -49,27 +49,27 @@
 
     <div class="container my-4 pt-5" style="max-width: 1000px;">
         <h4>Logged in as {{ username }}</h4>
-        <h4>event_id in session: {{ event_id }}</h4>
+        
 
         <div class="row row-cols-1 row-cols-md-3 g-4">
-            {% for event in events_list %} 
+            {% for event in events %} 
                 <div class="col">
                     <div class="card h-100">
                         <img src="static/image/pic_placeholder.png" class="card-img-top" alt="...">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <a href="{{ url_for ('event_details', event_id=event['event_id']) }}">
-                                    {{ event['event_name'] }}
+                                <a href="{{ url_for ('event_details', event_id=event.id) }}">
+                                    {{ event.title }}
                                 </a>
                             </h5>
-                          <!-- <p class="card-text">{{ event['event_description'] }}</p> -->
+                          <p class="card-text">{{ event.description }}</p>
                         </div>
                         <div class="card-footer">
-                          <small class="text-body-secondary">{{ event['event_date'] }}</small><br>
-                          <small class="text-body-secondary">{{ event['event_location'] }}</small>
+                          <small class="text-body-secondary">{{ event.date }}</small><br>
+                          <small class="text-body-secondary">{{ event.location }}</small>
 
                         </div>
-                      </div>
+                    </div>
                 </div>
             {% endfor %}
         </div>

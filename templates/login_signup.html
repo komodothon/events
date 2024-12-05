@@ -45,7 +45,12 @@
                     <div class="d-grid">
                         <input class="btn btn-primary" type="submit" value="Login">
                     </div>
+                    <div class="mb-3">
+                        <a href="{{ url_for('password_recovery') }}">Forgot password?</a>
+                    </div>
+
                 </form>
+
             </div>
     
             <!-- Second Form -->
@@ -124,7 +129,7 @@
                 .then(response => response.json())
                 .then(data => {
                     emailFeedback.textContent = data.message;
-                    emailFeedback.style.color = data.valid? "green" : "red";
+                    emailFeedback.style.color = (data.valid && data.available)? "green" : "red";
                 })
                 .catch(error => console.error("Error:", error))
         }

@@ -1,156 +1,129 @@
 from flask import Flask, render_template, request, g, session, redirect, url_for, jsonify
-from werkzeug.security import check_password_hash, generate_password_hash
+# from werkzeug.security import check_password_hash, generate_password_hash
+
 from os.path import join
 import sqlite3, re
 
-DATABASE = join('instance', 'event_user_data.db')
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
+from db_models import db, User, Event
+
 
 EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
 
 app = Flask(__name__)
 
-app.secret_key = "app_secret_key"
+# configurations
+app.config['SECRET_KEY'] = "app_secret_key"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///events.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
 
+# extensions
+db.init_app(app)
+bcrypt = Bcrypt(app)
+
+with app.app_context():
+    db.create_all()
 
 # ---------db actions ----------
 
-def get_db_connection():
-    if 'db' not in g:
-        g.db = sqlite3.connect(DATABASE)
-        # print("database connection established")
-        return g.db
+# def get_db_connection():
+    # if 'db' not in g:
+    #     g.db = sqlite3.connect(DATABASE)
+    #     # print("database connection established")
+    #     return g.db
     
-# with app.app_context():
-def get_db_as_dict():
-    connection = get_db_connection()
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-    cursor.execute("SELECT event_id, event_name, event_date, event_location, event_description FROM events")
-    headers = [description[0] for description in cursor.description]
-    rows = cursor.fetchall()
-    rows = [dict(row) for row in rows]
-    
-    # for row in rows:
-    #     for key, value in row.items():
-    #         print(f'{key}: {value}')
-    return headers, rows
+
 
 def create_new_user(username, email, password):
-    hashed_password = generate_password_hash(password)
-    prepped_data = (username, email, hashed_password)
+    hashed_password = bcrypt.generate_password_hash(password)
+    
+    new_user = User(username=username, email=email, password=hashed_password)
 
-    connection = get_db_connection()
-    cursor = connection.cursor()
+    db.session.add(new_user)
+    db.session.commit()
 
-    cursor.execute("INSERT INTO users (username, user_email, user_password) VALUES (?, ?, ?)", prepped_data)
+    return new_user.username
 
-    connection.commit()
-    return username
 
-def create_new_event(prepped_data):
-    connection = get_db_connection()
-    cursor = connection.cursor()
-    cursor.execute(
-        """
-        INSERT INTO events 
-        (event_name, event_date, event_location, event_description, event_owner) 
-        VALUES (?, ?, ?, ?, ?)""", prepped_data)
-            
-    connection.commit()
+def create_new_event(title, date, location, description, username):
+    owner = db.session.query(User).filter_by(username=username).first()
+
+    event = Event(title=title, date=date, location=location, description=description, owner_id=owner.id)  
+
+    db.session.add(event)
+    db.session.commit()
+
+
+def get_event_detail(id):
+    event = db.session.get(Event, id)
+    return event
 
 def get_owned_events(username):
-    connection = get_db_connection()
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-
-    cursor.execute("SELECT event_name, event_date, event_location, event_description FROM events WHERE event_owner = (?)", (username,))
-    user_owned_events = cursor.fetchall()
-    user_owned_events = [dict(row) for row in user_owned_events]
-    headers = [description[0] for description in cursor.description]
+    user = db.session.query(User).filter_by(username=username).first()
+    user_owned_events = user.events_owned
+    headers = Event.headers()
     
     return headers, user_owned_events
 
 def get_registered_events(username):
-    connection = get_db_connection()
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
+    user = db.session.query(User).filter_by(username=username).first()
+    user_registered_events = user.events_registered_for
+    headers = Event.headers()
+    
+    return headers, user_registered_events
+    
 
-    cursor.execute(
-        """
-        SELECT event_name, event_date, event_location, event_description FROM events WHERE event_id IN
-        (SELECT event_id FROM events_registrations WHERE username = (?))""", (username,))
-    user_owned_events = cursor.fetchall()
-    user_owned_events = [dict(row) for row in user_owned_events]
-    headers = [description[0] for description in cursor.description]
-    
-    return headers, user_owned_events
-    
 def user_event_registration(event_id, username):
-    prepped_data = (event_id, username)
+    event = db.session.get(Event, event_id)
+    user = db.session.query(User).filter_by(username=username).first()
 
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
-    cursor.execute("INSERT INTO events_registrations (event_id, username) VALUES (?, ?)", prepped_data)
-    connection.commit()
-
+    if user not in event.registrants:
+        event.registrants.append(user)
+        
+    db.session.commit()
 
 def authenticate_user(username, user_password):
-    connection = get_db_connection()
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
 
-    cursor.execute("SELECT * FROM users WHERE username = ? LIMIT 1", (username,))
-
-    user_detail = cursor.fetchone()
-
-    connection.close()
-
-    if user_detail:
-        if check_password_hash(user_detail['user_password'], user_password):
-            return user_detail['username']
-        else:
-            return None
+    user = db.session.query(User).filter_by(username=username).first()
+    print(user)
+    if user and bcrypt.check_password_hash(user.password, user_password):
+        return user.username   
     else:
         return None
+    # return user.username if user and bcrypt.check_password_hash(user_password, user.password) else None
 
 
-def add_event_user_registration(event_id, username):
-    connection = get_db_connection()
-    cursor = connection.cursor()
+# def add_event_user_registration(event_id, username):
+#     connection = get_db_connection()
+#     cursor = connection.cursor()
 
-    cursor.execute("SELECT 1 FROM user WHERE username = ?", (username))
-    cursor.row_factory = sqlite3.Row
-    user_detail = cursor.fetchone()
-    user_id = user_detail['user_id']
+#     cursor.execute("SELECT 1 FROM user WHERE username = ?", (username))
+#     cursor.row_factory = sqlite3.Row
+#     user_detail = cursor.fetchone()
+#     user_id = user_detail['user_id']
 
-    prepped_data = (event_id, user_id)
+#     prepped_data = (event_id, user_id)
 
-    cursor.execute("INSERT INTO events_registrations (event_id, user_id) VALUES (?, ?)", prepped_data)
+#     cursor.execute("INSERT INTO events_registrations (event_id, user_id) VALUES (?, ?)", prepped_data)
 
-    connection.commit()
+#     connection.commit()
 
-
-@app.teardown_appcontext
-def close_db_connection(exception):
-    db = g.pop('db', None)
-    if db is not None:
-        db.close()
-
-
+# @app.teardown_appcontext
+# def close_db_connection(exception):
+#     db = g.pop('db', None)
+#     if db is not None:
+#         db.close()
 
 # -----------routes-----------
 
 @app.route("/")
 def home():
-    headers, events_list = get_db_as_dict()
-    # username = None [instead, setup session['username'] and control validation through that]
     username = session.get('username')
-
-    return render_template("home.html", headers=headers, events_list=events_list, username=username)
-
+    events = db.session.query(Event).all()
+    return render_template("home.html", events=events, username=username)
 
 @app.route("/login", methods = ["POST", "GET"])
 def login():
@@ -169,8 +142,6 @@ def login():
     
     return render_template("login_signup.html")
 
-
-
 @app.route("/signup", methods=["POST","GET"])
 def signup():
     if request.method == "POST":
@@ -184,37 +155,21 @@ def signup():
 
             return redirect(url_for("home"))
 
-
-
     return render_template("login_signup.html")
-
 
 @app.route("/create_event", methods=["POST", "GET"])
 def create_event():
     username = session.get('username')
     if request.method == 'POST':
-        event_name = request.form.get('event_name')
-        event_date = request.form.get('event_date')
-        event_location = request.form.get('event_location')
-        event_description = request.form.get('event_description')
-        event_owner = session['username']
+        title = request.form.get('title')
+        date = request.form.get('date')
+        location = request.form.get('location')
+        description = request.form.get('description')
 
-        prepped_data = (event_name, event_date, event_location, event_description, event_owner)
-        print(prepped_data)
-
-        if not event_name or not event_date or not event_location or not event_description:
+        if not title or not date or not location or not description:
             return "Incomplete fields", 400
-        # connection = get_db_connection()
-        # cursor = connection.cursor()
-        # cursor.execute(
-        #     """
-        #     INSERT INTO events 
-        #     (event_name, event_date, event_location, event_description) 
-        #     VALUES (?, ?, ?, ?)""", prepped_data)
-                
-        # connection.commit()
-        # connection.close()
-        create_new_event(prepped_data)
+
+        create_new_event(title, date, location, description, username)
 
         return redirect(url_for("home"))
     
@@ -222,28 +177,18 @@ def create_event():
 
 @app.route("/event_details/<int:event_id>")
 def event_details(event_id):
-    connection = get_db_connection()
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-    cursor.execute("SELECT * FROM events WHERE event_id = ? LIMIT 1", (event_id,))
-    event = cursor.fetchone()
+    username = session.get('username')
+
+    event = get_event_detail(event_id)
 
     if event:
-        event = dict(event)
-        session['event_id'] = event['event_id']
-            
-    connection.close()
+        return render_template("event_details.html", event=event, username=username)
+    else:
+        return "Event Not Found"
+
+@app.route("/register_for_event/<int:event_id>", methods=["GET"])
+def register_for_event(event_id):
     username = session.get('username')
-
-    return render_template("event_details.html", event=event, username=username)
-
-@app.route("/register_for_event")
-def register_for_event():
-    event_id = session.get('event_id')
-    username = session.get('username')
-
-    print(event_id, username)
-
     if username and event_id:
         user_event_registration(event_id, username)
     return redirect(url_for("user_registered_events"))
@@ -263,15 +208,8 @@ def user_registered_events():
         headers, user_registered_events = get_registered_events(username)
         return render_template("user_registered_events.html", username=username, user_registered_events=user_registered_events, headers=headers)
         # return f'Events for username {username}'
-    
+
     return "username not found!"
-
-
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("home"))
 
 @app.route('/check_username')
 def check_username():
@@ -282,29 +220,55 @@ def check_username():
     # Database query to check if the username exists
     if username:
         # print(f'username: {username}')
+        result = db.session.query(User).filter_by(username=username).first()
 
-        connection = get_db_connection()
-        cursor = connection.cursor()
-        cursor.execute("SELECT 1 FROM users WHERE username = ?", (username,))
-        result = cursor.fetchone()
-        # print(f'result: {result}')
-        
+               
         # If no result is found, username is available
-        available = result is None
+        available = result is None # if result is None, available = True
         # print(f'available = {available}')
 
     # Return JSON response
     return jsonify({"available": available})
 
-
 @app.route("/check_email", methods=["GET"])
 def check_email():
     email = request.args.get('email')
 
-    if re.match(EMAIL_REGEX, email):
-        return jsonify({'valid': True, 'message': 'Valid email address'}), 200
+    if not email or not re.match(EMAIL_REGEX, email):
+        return jsonify({'valid': False, 'available': False, 'message': 'Invalid email address'}), 400
+    
+    result = db.session.query(User).filter_by(email=email).first()
+    available = result is None
+
+    if available:
+        return jsonify({'valid': True, 'available': available, 'message': 'Valid and available email address'}), 200
+    
     else:
-        return jsonify({'valid': False, 'message': 'Invalid email address'}), 400
+        return jsonify({'valid': True, 'available': available, 'message': 'Valid but not available email address '}), 409
+
+    # if email and re.match(EMAIL_REGEX, email):
+    #     result = db.session.query(User).filter_by(email=email).first()
+    #     available = result is None
+
+    #     if available:
+    #         return jsonify({'valid': True, 'available': available, 'message': 'Valid and available email address'}), 200
+        
+    #     else:
+    #         return jsonify({'valid': True, 'available': available, 'message': 'Valid but not available email address'}), 200
+
+
+
+    # else:
+    #     return jsonify({'valid': False, 'message': 'Invalid email address'}), 400
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("home"))
+
+@app.route("/password_recovery")
+def password_recovery():
+    return render_template("password_recovery.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

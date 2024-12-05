@@ -19,25 +19,25 @@
 
                     <form action="{{ url_for('create_event') }}" method="POST">
                         <div class="mb-3">
-                            <label class="form-label" for="event_name">Event name:</label>
-                            <input class="form-control" id="event_name" type="text" name="event_name" autocomplete="off" 
-                                    autofocus placeholder="Enter event name" aria-label="Event Name" required>  
+                            <label class="form-label" for="title">Event title:</label>
+                            <input class="form-control" id="title" type="text" name="title" autocomplete="off" 
+                                    autofocus placeholder="Enter event title" aria-label="Event title" required>  
                         </div>
             
                         <div class="mb-3">
-                            <label class="form-label" for="event_date">Event date:</label>
-                            <input class="form-control" id="event_date" type="date" name="event_date" aria-label="Event Date" required>
+                            <label class="form-label" for="date">Event date:</label>
+                            <input class="form-control" id="date" type="date" name="date" aria-label="Event Date" required>
                         </div>
             
                         <div class="mb-3">
-                            <label class="form-label" for="event_location">Event Location:</label>
-                            <input class="form-control" id="event_location" type="text" name="event_location" autocomplete="off"
+                            <label class="form-label" for="location">Event Location:</label>
+                            <input class="form-control" id="location" type="text" name="location" autocomplete="off"
                                     placeholder="Enter event location" aria-label="Event Location" required>  
                         </div>
             
                         <div class="mb-3">
-                            <label class="form-label" for="event_description">Event Description:</label>
-                            <textarea class="form-control" id="event_description" name="event_description" rows="6" style="min-width: 80%;" autocomplete="off"
+                            <label class="form-label" for="description">Event Description:</label>
+                            <textarea class="form-control" id="description" name="description" rows="6" style="min-width: 80%;" autocomplete="off"
                                         placeholder="Event Description" aria-label="Event Description" required></textarea>
                         </div>
             
