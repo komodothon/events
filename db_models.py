@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 
 
 db = SQLAlchemy()
@@ -10,7 +11,7 @@ event_registrations = db.Table(
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
 )
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -31,7 +32,7 @@ class Event(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80), nullable=False)
-    date = db.Column(db.String(80), nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
     location = db.Column(db.String(80), nullable=False)
     description = db.Column(db.Text, nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)

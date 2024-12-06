@@ -2,8 +2,6 @@
 
 
 {% block content %}
-    <h4 style="padding-top: 60px;">Logged in as {{ username}}</h4>
-    <!-- <h4>user_owned_events= {{ user_owned_events }}</h4> -->
 
     <div class="container mt-5">
         <h4>My Hosting events</h4>
@@ -22,7 +20,9 @@
 
                     {% for event in user_owned_events %}
                         <tr>
-                            <td>{{ event.title }}</td>
+                            <td>
+                                <a href="{{ url_for('event_details', event_id=event.id) }}">{{ event.title }}</a>
+                            </td>                            
                             <td>{{ event.date }}</td>
                             <td>{{ event.location }}</td>
                             <td>{{ event.description }}</td>

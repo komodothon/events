@@ -4,9 +4,11 @@ from flask import Flask, render_template, request, g, session, redirect, url_for
 from os.path import join
 import sqlite3, re
 
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from db_models import db, User, Event
+from forms import *
 
 
 EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
@@ -18,6 +20,10 @@ app.config['SECRET_KEY'] = "app_secret_key"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///events.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# login  configurations
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
 
 
 # extensions
@@ -27,31 +33,34 @@ bcrypt = Bcrypt(app)
 with app.app_context():
     db.create_all()
 
-# ---------db actions ----------
-
-# def get_db_connection():
-    # if 'db' not in g:
-    #     g.db = sqlite3.connect(DATABASE)
-    #     # print("database connection established")
-    #     return g.db
-    
+# user loader helper function
+@login_manager.user_loader
+def load_user(user_id):
+    user = db.session.get(User, int(user_id))
+    return user
 
 
+""" Functions """
 def create_new_user(username, email, password):
-    hashed_password = bcrypt.generate_password_hash(password)
+    
+    hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
     
     new_user = User(username=username, email=email, password=hashed_password)
 
     db.session.add(new_user)
     db.session.commit()
 
-    return new_user.username
+    return new_user
 
 
-def create_new_event(title, date, location, description, username):
-    owner = db.session.query(User).filter_by(username=username).first()
-
-    event = Event(title=title, date=date, location=location, description=description, owner_id=owner.id)  
+def create_new_event(title, date, location, description, owner):
+    event = Event(
+        title=title, 
+        date=date, 
+        location=location, 
+        description=description, 
+        owner_id=owner.id
+    )  
 
     db.session.add(event)
     db.session.commit()
@@ -61,152 +70,148 @@ def get_event_detail(id):
     event = db.session.get(Event, id)
     return event
 
-def get_owned_events(username):
-    user = db.session.query(User).filter_by(username=username).first()
+def get_owned_events(user):
+    user = db.session.query(User).filter_by(username=user.username).first()
     user_owned_events = user.events_owned
     headers = Event.headers()
     
     return headers, user_owned_events
 
-def get_registered_events(username):
-    user = db.session.query(User).filter_by(username=username).first()
+def get_registered_events(user):
+    user = db.session.query(User).filter_by(username=user.username).first()
     user_registered_events = user.events_registered_for
     headers = Event.headers()
     
     return headers, user_registered_events
     
 
-def user_event_registration(event_id, username):
+def user_event_registration(event_id, user):
     event = db.session.get(Event, event_id)
-    user = db.session.query(User).filter_by(username=username).first()
 
     if user not in event.registrants:
         event.registrants.append(user)
         
     db.session.commit()
 
-def authenticate_user(username, user_password):
+def authenticate_user(username, password):
 
     user = db.session.query(User).filter_by(username=username).first()
-    print(user)
-    if user and bcrypt.check_password_hash(user.password, user_password):
-        return user.username   
+    if user and bcrypt.check_password_hash(user.password, password):
+        return user  
     else:
         return None
-    # return user.username if user and bcrypt.check_password_hash(user_password, user.password) else None
-
-
-# def add_event_user_registration(event_id, username):
-#     connection = get_db_connection()
-#     cursor = connection.cursor()
-
-#     cursor.execute("SELECT 1 FROM user WHERE username = ?", (username))
-#     cursor.row_factory = sqlite3.Row
-#     user_detail = cursor.fetchone()
-#     user_id = user_detail['user_id']
-
-#     prepped_data = (event_id, user_id)
-
-#     cursor.execute("INSERT INTO events_registrations (event_id, user_id) VALUES (?, ?)", prepped_data)
-
-#     connection.commit()
-
-# @app.teardown_appcontext
-# def close_db_connection(exception):
-#     db = g.pop('db', None)
-#     if db is not None:
-#         db.close()
-
-# -----------routes-----------
+ 
+""" Routes """
 
 @app.route("/")
 def home():
-    username = session.get('username')
+
     events = db.session.query(Event).all()
-    return render_template("home.html", events=events, username=username)
+    return render_template("home.html", events=events)
 
 @app.route("/login", methods = ["POST", "GET"])
 def login():
-    if request.method == "POST":
-        username = request.form.get('username')
-        user_password = request.form.get('user_password')
+    """ User Login"""
+    error = None
+    login_form = LoginForm()
+    register_form = RegisterForm()
 
-        authenticated_username = authenticate_user(username, user_password)
+    if login_form.validate_on_submit():
+        print("login form validated")
+        username = login_form.username.data
+        password = login_form.password.data
+        
+        authenticated_user = authenticate_user(username, password)
  
-        if authenticated_username:
-            session['username'] = authenticated_username
+        if authenticated_user:
+            print("user authenticated")
+            login_user(authenticated_user)
             return redirect(url_for("home"))
         else:
+            print("wrong username or password")
             error = "Invalid username or password"
-            return render_template("login_signup.html", error=error)
+            return render_template("login_signup.html", error=error, login_form=login_form, register_form=register_form)
     
-    return render_template("login_signup.html")
+    return render_template("login_signup.html", error=error, login_form=login_form, register_form=register_form)
 
 @app.route("/signup", methods=["POST","GET"])
 def signup():
-    if request.method == "POST":
-        new_username = request.form.get('new_username')
-        new_email = request.form.get('new_email')
-        new_password = request.form.get('new_password')
+    """ Register a new user """
+    login_form = LoginForm()
+    register_form = RegisterForm()
 
-        added_username = create_new_user(new_username, new_email, new_password)
-        if added_username:
-            session['username'] = added_username
+
+    if register_form.validate_on_submit():
+
+        username = register_form.username.data
+        email = register_form.email.data
+        password = register_form.password.data
+
+        new_user = create_new_user(username, email, password)
+        if new_user:
+            login_user(new_user)
 
             return redirect(url_for("home"))
 
-    return render_template("login_signup.html")
+    return render_template("login_signup.html", login_form=login_form, register_form=register_form)
 
 @app.route("/create_event", methods=["POST", "GET"])
+@login_required
 def create_event():
-    username = session.get('username')
-    if request.method == 'POST':
-        title = request.form.get('title')
-        date = request.form.get('date')
-        location = request.form.get('location')
-        description = request.form.get('description')
+    """ Create a new event """
 
-        if not title or not date or not location or not description:
-            return "Incomplete fields", 400
+    create_event_form = CreateEventForm()
+    print("create event: initiated")
 
-        create_new_event(title, date, location, description, username)
+    # if create_event_form.validate_on_submit():
+    if request.method == "POST":
+        print(request.form.items())
+        # print("create event: validated")
+        title = create_event_form.title.data
+        date = create_event_form.date.data
+        location = create_event_form.location.data
+        description = create_event_form.description.data
+        
+        create_new_event(title, date, location, description, current_user)
 
         return redirect(url_for("home"))
-    
-    return render_template("create_event.html", username=username)
+
+    return render_template("create_event.html", form=create_event_form)
 
 @app.route("/event_details/<int:event_id>")
 def event_details(event_id):
-    username = session.get('username')
-
+    """ event details page """
     event = get_event_detail(event_id)
 
     if event:
-        return render_template("event_details.html", event=event, username=username)
+        return render_template("event_details.html", event=event)
     else:
         return "Event Not Found"
 
 @app.route("/register_for_event/<int:event_id>", methods=["GET"])
+@login_required
 def register_for_event(event_id):
-    username = session.get('username')
-    if username and event_id:
-        user_event_registration(event_id, username)
+    """ User registering for an event """
+    if current_user.is_authenticated and event_id:
+        user_event_registration(event_id, current_user)
     return redirect(url_for("user_registered_events"))
 
 @app.route("/user_owned_events")
+@login_required
 def user_owned_events():
-    username = session.get('username')
-    if username is not None:
-        headers, user_owned_events = get_owned_events(username)
-        return render_template("user_owned_events.html", username=username, user_owned_events=user_owned_events, headers=headers)
+    """ User owned events """
+    if current_user.is_authenticated:
+        headers, user_owned_events = get_owned_events(current_user)
+        return render_template("user_owned_events.html", user_owned_events=user_owned_events, headers=headers)
     return "username not found!"
 
 @app.route("/user_registered_events")
+@login_required
 def user_registered_events():
-    username = session.get('username')
-    if username is not None:
-        headers, user_registered_events = get_registered_events(username)
-        return render_template("user_registered_events.html", username=username, user_registered_events=user_registered_events, headers=headers)
+    """ Events registered for by the user"""
+    if current_user.is_authenticated:
+        headers, user_registered_events = get_registered_events(current_user)
+        return render_template("user_registered_events.html", user_registered_events=user_registered_events, headers=headers)
         # return f'Events for username {username}'
 
     return "username not found!"

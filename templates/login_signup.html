@@ -5,6 +5,8 @@
 {% endblock %}
 
 {% block content %}
+
+
     <!-- <div class="container my-4 pt-5" style="max-width: 500px; justify-self: left; margin-left: 50px;">
         <form class="container-form" action="{{ url_for ('login') }}" method="POST">
             <div class="mb-3">
@@ -29,8 +31,40 @@
 
     <div class="container">
         <div class="row" style="max-width: 1000px; padding-top: 80px;">
-            <!-- First Form -->
+            
+            
+            <!-- First Form (Flaskform)-->            
             <div class="col-md-6" style="border-radius: 10px;">
+                <form class="p-3 border rounded-3 shadow" action="{{ url_for('login') }}" method="POST">
+                    <h3>Login</h3>
+                    <div class="mb-3">
+                        {{ login_form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ login_form.username.label(class="form-label") }}
+                            {{ login_form.username(class="form-control") }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ login_form.password.label(class="form-label") }}
+                            {{ login_form.password(class="form-control") }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ login_form.submit(class="btn btn-primary mb-3") }}
+                        </div>
+                    </div>
+                   
+                    <div class="mb-3">
+                        <a href="{{ url_for('password_recovery') }}">Forgot password?</a>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <!-- First Form -->
+            <!-- #<div class="col-md-6" style="border-radius: 10px;">
                 <form class="p-3 border rounded-3 shadow" action="{{ url_for('login') }}" method="POST">
                     <h3>Login</h3>
                     <div class="mb-3">
@@ -51,35 +85,76 @@
 
                 </form>
 
-            </div>
+            </div># -->
     
-            <!-- Second Form -->
+            <!-- Second Form (FlaskForm)-->
             <div class="col-md-6">
+                <form class="p-3 border rounded-3 shadow" action="{{ url_for('signup') }}" method="POST">
+                    <h3>Sign Up</h3>
+
+                    <div class="mb-3">
+                        {{ register_form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ register_form.username.label(class="form-label")}}
+                            {{ register_form.username(class="form-control", id="new-username", onkeyup="checkUsername()") }}
+                            <div id="username-feedback"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ register_form.email.label(class="form-label") }}
+                            {{ register_form.email(class="form-control", id="new-email", onblur="checkEmail()") }}
+                            <div id="email-feedback"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ register_form.password.label(class="form-label") }}
+                            {{ register_form.password(class="form-control", id="new-password") }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ register_form.confirm_password.label(class="form-label") }}
+                            {{ register_form.confirm_password(class="form-control", id="confirm-password", oninput="checkPassword()") }}
+                            <div id="password-feedback"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ register_form.submit(class="btn btn-primary mb-3") }}
+                        </div>
+                    </div>
+
+
+                </form>
+            </div>
+
+
+
+            <!-- Second Form -->
+            <!-- #<div class="col-md-6">
                 <form class="p-3 border rounded-3 shadow" action="{{ url_for('signup') }}" method="POST">
                     <h3>Sign Up</h3>
                     <div class="mb-3">
                         <label class="form-label" for="new_username">Username:</label>
-                        <input id="new_username" class="form-control" type="text" name="new_username" 
+                        <input id="new-username" class="form-control" type="text" name="new-username" 
                                 placeholder="Enter username" required onkeyup="checkUsername()">
                         <div id="username-feedback"></div>
                     </div>
                     <div class="mb-3">
-                        <label for="new_email" class="form-label">Email:</label>
-                        <input id="new_email" class="form-control" type="email" name="new_email" 
-                                placeholder="Enter email" required onblur="checkEmail()">
-                        
-                                <div id="email-feedback"></div>
+                        <label for="new-email" class="form-label">Email:</label>
+                        <input id="new-email" class="form-control" type="email" name="new-email" 
+                                placeholder="Enter email" required onblur="checkEmail()">                        
+                        <div id="email-feedback"></div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="new_password" class="form-label">Password:</label>
-                        <input id="new_password" class="form-control" type="password" name="new_password" placeholder="Enter password" required>
+                        <label for="new-password" class="form-label">Password:</label>
+                        <input id="new-password" class="form-control" type="password" name="new-password" placeholder="Enter password" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="re_enter_password" class="form-label">Re-enter Password:</label>
-                        <input id="re_enter_password" class="form-control" type="password" name="re_enter_password" 
-                                placeholder="Re-Enter password" required oninput="checkPassword()">
+                        <label for="confirm-password" class="form-label">Confirm Password:</label>
+                        <input id="confirm-password" class="form-control" type="password" name="confirm-password" 
+                                placeholder="Confirm password" required oninput="checkPassword()">
                         <div id="password-feedback"></div>
                     </div>
 
@@ -87,33 +162,37 @@
                         <input class="btn btn-secondary" type="submit" value="Sign Up">
                     </div>
                 </form>
-            </div>
+            </div># -->
+
+
+
         </div>
     </div>
 
     <script>
         function checkUsername() {
-            const new_username = document.getElementById("new_username").value;
-            const feedback = document.getElementById("username-feedback");
+            const newUsername = document.getElementById("new-username").value;
+            const usernameFeedback = document.getElementById("username-feedback");
 
-            if (new_username.length < 3) {
-                feedback.textContent = "Username too short";
-                feedback.style.fontFamily = "Calibri";
-                feedback.style.color = "red";
+            console.log("Checking username: ", newUsername);
+            if (newUsername.length < 3) {
+                usernameFeedback.textContent = "Username too short";
+                usernameFeedback.style.fontFamily = "Calibri";
+                usernameFeedback.style.color = "red";
                 return
             }
 
-            fetch(`/check_username?username=${new_username}`)
+            fetch(`/check_username?username=${newUsername}`)
             .then(response => response.json())
             .then(data => {
                 if (data.available) {
-                    feedback.textContent = "Username available!";
-                    feedback.style.fontFamily = "Calibri";
-                    feedback.style.color = "green"
+                    usernameFeedback.textContent = "Username available!";
+                    usernameFeedback.style.fontFamily = "Calibri";
+                    usernameFeedback.style.color = "green"
                 } else {
-                    feedback.textContent = "Username taken";
-                    feedback.style.fontFamily = "Calibri";
-                    feedback.style.color = "red"
+                    usernameFeedback.textContent = "Username not available";
+                    usernameFeedback.style.fontFamily = "Calibri";
+                    usernameFeedback.style.color = "red"
                 }
             })
             .catch(error => console.error("Error:", error))
@@ -122,7 +201,7 @@
 
     <script>
         function checkEmail() {
-            const newEmail = document.getElementById("new_email").value;
+            const newEmail = document.getElementById("new-email").value;
             const emailFeedback = document.getElementById("email-feedback")
 
             fetch(`/check_email?email=${newEmail}`)
@@ -137,13 +216,13 @@
 
     <script>
         function checkPassword() {
-            const newPassword = document.getElementById("new_password").value;
-            const reEnterPassword = document.getElementById("re_enter_password").value;
+            const newPassword = document.getElementById("new-password").value;
+            const confirmPassword = document.getElementById("confirm-password").value;
             const passwordFeedback = document.getElementById("password-feedback");
 
-            if (reEnterPassword.length == 0) {
+            if (confirmPassword.length == 0) {
                 passwordFeedback.textContent = "";
-            } else if (newPassword === reEnterPassword) {
+            } else if (newPassword === confirmPassword) {
                 passwordFeedback.textContent = "Passwords match";
                 passwordFeedback.style.color = "green";
             } else {

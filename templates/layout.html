@@ -22,7 +22,7 @@
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('home') }}">Events Home / Logo</a>
 
-            {% if username %}
+            {% if current_user.is_authenticated %}
                 <div class="d-flex">
                     <a href="{{ url_for('user_owned_events') }}" class="btn btn-outline-light me-2">My Hosting Events</a>
                     <a href="{{ url_for('user_registered_events') }}" class="btn btn-primary me-2">My Registered Events</a>
@@ -42,7 +42,7 @@
     <header>
         <div class="container-header">
             {% block header %}
-        
+                <h5 style="padding-top: 60px;">Logged in as {{ current_user.username }}</h5>
             {% endblock %}
         </div>
     </header>

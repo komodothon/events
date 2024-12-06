@@ -1,6 +1,7 @@
 from db_models import db, User, Event, event_registrations
 from flask_bcrypt import Bcrypt
 from random import randint, choice, sample
+from datetime import datetime, date, timedelta
 
 from app import app
 
@@ -36,10 +37,22 @@ def add_sample_users():
 def add_sample_events():
     for i in range(1,26):
         title = f"title {i}"
-        date = f"date {i}"
+
         location = f"location {i}"
         description = f"description {i}"
 
+        random_days = randint(3, 25)
+        random_hour = randint(8,18)
+        random_min = choice([0, 30])
+        date = datetime.now() + timedelta(
+            days=random_days, 
+            hours=random_hour, 
+            minutes=random_min
+        )
+
+        date = date.replace(second=0, microsecond=0)
+
+        
         users = db.session.query(User).all()
         owner = choice(users)
         owner_id = owner.id

@@ -2,9 +2,9 @@
 
 Refactoring with 
 1. Flask blueprints, 
-2. Flask-login, 
+2. [x] Flask-login, 
 3. [x] Flask-sqlalchemy - implemented.
-4. Flask-WTForms
+4. [x] Flask-WTForms
 
 <!-- ## 1. Code Structure
 events_app/
@@ -62,8 +62,7 @@ events_app/
   - [x] Logged-in users can create new events. 
   - [ ] Event details include 
     - [x] title
-    - [x] date
-    - [ ] time
+    - [x] date and time in DateTime format
     - [x] location
     - [x] description
     - [ ] maximum capacity
