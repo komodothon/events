@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-    <h4 style="padding-top: 60px;">Logged in as {{ current_user.username }}</h4>
+
     <div class="bg-light d-flex align-items-center min-vh-100">
         <div class="container d-flex justify-content-center">
             <div class="caard shadow-lg" style="max-width: 600pc; width: 100%; position: relative;">
@@ -19,7 +19,7 @@
 
 
                     <!-- Create event form (Flaskform) -->
-                     <form action="{{ url_for('create_event') }}" method="POST">
+                     <form action="{{ url_for('events.create_event') }}" method="POST">
                         <div class="mb-3">
                             {{ form.hidden_tag() }}
 
@@ -50,36 +50,6 @@
                         </div>
                      </form>
 
-                    <!-- Event form -->
-                    <!-- #<form action="{{ url_for('create_event') }}" method="POST">
-                        <div class="mb-3">
-                            <label class="form-label" for="title">Event title:</label>
-                            <input class="form-control" id="title" type="text" name="title" autocomplete="off" 
-                                    autofocus placeholder="Enter event title" aria-label="Event title" required>  
-                        </div>
-            
-                        <div class="mb-3">
-                            <label class="form-label" for="date">Event date:</label>
-                            <input class="form-control" id="date" type="date" name="date" aria-label="Event Date" required>
-                        </div>
-            
-                        <div class="mb-3">
-                            <label class="form-label" for="location">Event Location:</label>
-                            <input class="form-control" id="location" type="text" name="location" autocomplete="off"
-                                    placeholder="Enter event location" aria-label="Event Location" required>  
-                        </div>
-            
-                        <div class="mb-3">
-                            <label class="form-label" for="description">Event Description:</label>
-                            <textarea class="form-control" id="description" name="description" rows="6" style="min-width: 80%;" autocomplete="off"
-                                        placeholder="Event Description" aria-label="Event Description" required></textarea>
-                        </div>
-            
-                        <div class="d-grid mt-4">
-                            <input class="btn btn-primary" type="submit" value="Add Event">
-                        </div>
-                    </form># -->
-                    
                 </div>
             </div>
         </div>

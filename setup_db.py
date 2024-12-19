@@ -1,16 +1,19 @@
-from db_models import db, User, Event, event_registrations
-from flask_bcrypt import Bcrypt
+from app import db, bcrypt, create_app
+
+from app.models import User, Event, event_registrations
+
 from random import randint, choice, sample
 from datetime import datetime, date, timedelta
 
-from app import app
 
-bcrypt = Bcrypt(app)
 
 def main():
 
-    
+    app = create_app()
+
     with app.app_context():
+        db.create_all()
+
         add_sample_users()
         add_sample_events()
         add_sample_event_registrations()

@@ -1,8 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
-
-db = SQLAlchemy()
+from app import db
 
 # association table
 event_registrations = db.Table(

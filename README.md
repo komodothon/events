@@ -1,29 +1,33 @@
 # Event Management System Overview
 
 Refactoring with 
-1. Flask blueprints, 
+1. [x] Flask blueprints, 
+    - [x] auth - related to user management, authentication and so on
+    - [x] events - related to events, new events, listing of events and event details
+    - [x] api - RESTful api for access by other clients
 2. [x] Flask-login, 
 3. [x] Flask-sqlalchemy - implemented.
 4. [x] Flask-WTForms
 
-<!-- ## 1. Code Structure
+## 1. Code Structure
 events_app/
 │
 ├── app/
 │   ├── __init__.py           # Initialize the Flask app and database
 │   ├── models.py             # Database models (SQLAlchemy ORM)
+│   ├── forms.py              # Flaskforms definitions for login, register... (WTForms / flask_wtforms)
 │   ├── routes/
 │   │   ├── __init__.py       # Register blueprints
 │   │   ├── auth.py           # Authentication routes
 │   │   ├── events.py         # Event management routes
-│   │   ├── api.py            # API routes (e.g., AJAX validation)
+│   │   ├── [ ]api.py            # API routes (e.g., AJAX validation)
 │   └── services/
 │       ├── __init__.py       # Utility functions
 │       ├── db_utils.py       # Database operations (e.g., queries)
 │       ├── auth_utils.py     # Authentication helpers
 │
 ├── instance/
-│   └── courses.db            # SQLite database file (auto-generated)
+│   └── events.db            # SQLite database file (auto-generated)
 │
 ├── templates/                # HTML templates
 │   ├── base.html             # Base layout template
@@ -35,9 +39,9 @@ events_app/
 │
 ├── static/                   # Static files (CSS, JS, images)
 │
-├── config.py                 # App configuration file
+├── README.md                 # Project overview and details (this document)
 ├── requirements.txt          # Python dependencies
-├── run.py                    # Entry point for the application -->
+├── run.py                    # Entry point for the application
 
 
 ## 1. User Management
@@ -108,7 +112,7 @@ events_app/
   - [x] HTML, CSS and JavaScript.
 - **Backend:**
   - [x] Flask for handling server-side logic.
-  - [ ] RESTful API for communication between frontend and backend.
+  - [x] RESTful API for communication between frontend and backend.
 - **Database:**
   - [x] SQLite for storing user and event data.
 - **Authentication:**

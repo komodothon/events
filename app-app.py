@@ -1,11 +1,10 @@
-from flask import Flask, render_template, request, g, session, redirect, url_for, jsonify
+from flask import Flask, render_template, request, session, redirect, url_for, jsonify
 # from werkzeug.security import check_password_hash, generate_password_hash
 
 from os.path import join
-import sqlite3, re
+import re
 
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_bcrypt import Bcrypt
 from db_models import db, User, Event
 from forms import *
@@ -268,6 +267,7 @@ def check_email():
 
 @app.route("/logout")
 def logout():
+    logout_user()
     session.clear()
     return redirect(url_for("home"))
 

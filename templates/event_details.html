@@ -17,8 +17,8 @@
                     </div>
                     <div class="card-footer text-center">
                         <!-- Optional buttons or links could go here -->
-                        <a href="{{ url_for('home') }}" class="btn btn-secondary">Back to Events</a>
-                        <a href="{{ url_for('register_for_event', event_id=event.id) }}" class="btn btn-secondary">Register</a>
+                        <a href="{{ url_for('events.home') }}" class="btn btn-secondary">Back to Events</a>
+                        <a href="{{ url_for('events.register_for_event', event_id=event.id) }}" class="btn btn-secondary">Register</a>
                     </div>
                 </div>
             </div>

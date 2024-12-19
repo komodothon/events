@@ -4,38 +4,20 @@
     Login
 {% endblock %}
 
+{% block header %}
+    <div class="row" style="max-width: 1000px; padding-top: 60px; padding-left: 20px;">  
+        {{ error }}
+    </div>
+{% endblock %}
+
 {% block content %}
 
-
-    <!-- <div class="container my-4 pt-5" style="max-width: 500px; justify-self: left; margin-left: 50px;">
-        <form class="container-form" action="{{ url_for ('login') }}" method="POST">
-            <div class="mb-3">
-                <label class="form-label" for="username">Username:</label>
-                <input class="form-control" id="username" type="text" name="username" 
-                        placeholder="Enter username" autocomplete="off" autofocus required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label" for="password">Password:</label>
-                <input class="form-control" id="password" type="password" 
-                        name="user_password">
-            </div>
-
-            <div class="d-grid">
-                <input class="btn btn-primary" type="submit" value="Login">
-            </div>
-        </form>
-
-    </div> -->
-
-
     <div class="container">
-        <div class="row" style="max-width: 1000px; padding-top: 80px;">
-            
+        <div class="row" style="max-width: 1000px; padding-top: 80px;">            
             
             <!-- First Form (Flaskform)-->            
             <div class="col-md-6" style="border-radius: 10px;">
-                <form class="p-3 border rounded-3 shadow" action="{{ url_for('login') }}" method="POST">
+                <form class="p-3 border rounded-3 shadow" action="{{ url_for('auth.login') }}" method="POST">
                     <h3>Login</h3>
                     <div class="mb-3">
                         {{ login_form.hidden_tag() }}
@@ -56,40 +38,17 @@
                     </div>
                    
                     <div class="mb-3">
-                        <a href="{{ url_for('password_recovery') }}">Forgot password?</a>
+                        <a href="{{ url_for('auth.password_recovery') }}">Forgot password?</a>
                     </div>
 
                 </form>
 
             </div>
 
-            <!-- First Form -->
-            <!-- #<div class="col-md-6" style="border-radius: 10px;">
-                <form class="p-3 border rounded-3 shadow" action="{{ url_for('login') }}" method="POST">
-                    <h3>Login</h3>
-                    <div class="mb-3">
-                        <label class="form-label" for="username">Username:</label>
-                        <input id="username" class="form-control" type="text"name="username" 
-                                placeholder="Enter username"autocomplete="off" autofocus required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="password">Password:</label>
-                        <input id="password" class="form-control" type="password" name="user_password" placeholder="Enter password" required>
-                    </div>
-                    <div class="d-grid">
-                        <input class="btn btn-primary" type="submit" value="Login">
-                    </div>
-                    <div class="mb-3">
-                        <a href="{{ url_for('password_recovery') }}">Forgot password?</a>
-                    </div>
-
-                </form>
-
-            </div># -->
     
             <!-- Second Form (FlaskForm)-->
             <div class="col-md-6">
-                <form class="p-3 border rounded-3 shadow" action="{{ url_for('signup') }}" method="POST">
+                <form class="p-3 border rounded-3 shadow" action="{{ url_for('auth.register') }}" method="POST">
                     <h3>Sign Up</h3>
 
                     <div class="mb-3">
@@ -126,46 +85,7 @@
 
                 </form>
             </div>
-
-
-
-            <!-- Second Form -->
-            <!-- #<div class="col-md-6">
-                <form class="p-3 border rounded-3 shadow" action="{{ url_for('signup') }}" method="POST">
-                    <h3>Sign Up</h3>
-                    <div class="mb-3">
-                        <label class="form-label" for="new_username">Username:</label>
-                        <input id="new-username" class="form-control" type="text" name="new-username" 
-                                placeholder="Enter username" required onkeyup="checkUsername()">
-                        <div id="username-feedback"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="new-email" class="form-label">Email:</label>
-                        <input id="new-email" class="form-control" type="email" name="new-email" 
-                                placeholder="Enter email" required onblur="checkEmail()">                        
-                        <div id="email-feedback"></div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="new-password" class="form-label">Password:</label>
-                        <input id="new-password" class="form-control" type="password" name="new-password" placeholder="Enter password" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="confirm-password" class="form-label">Confirm Password:</label>
-                        <input id="confirm-password" class="form-control" type="password" name="confirm-password" 
-                                placeholder="Confirm password" required oninput="checkPassword()">
-                        <div id="password-feedback"></div>
-                    </div>
-
-                    <div class="d-grid">
-                        <input class="btn btn-secondary" type="submit" value="Sign Up">
-                    </div>
-                </form>
-            </div># -->
-
-
-
+    
         </div>
     </div>
 
@@ -182,7 +102,7 @@
                 return
             }
 
-            fetch(`/check_username?username=${newUsername}`)
+            fetch(`/auth/check_username?username=${encodeURIComponent(newUsername)}`)
             .then(response => response.json())
             .then(data => {
                 if (data.available) {
@@ -204,7 +124,7 @@
             const newEmail = document.getElementById("new-email").value;
             const emailFeedback = document.getElementById("email-feedback")
 
-            fetch(`/check_email?email=${newEmail}`)
+            fetch(`/auth/check_email?email=${encodeURIComponent(newEmail)}`)
                 .then(response => response.json())
                 .then(data => {
                     emailFeedback.textContent = data.message;
