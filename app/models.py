@@ -17,6 +17,16 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
+    role_id = db.Column(db.Integer(), db.ForeignKey('roles.id'), nullable=False)
+
+    events_owned = db.relationship("Event", back_populates="owner")
+    events_registered_for = db.relationship("Event", secondary="event_registrations", back_populates="registrants")
+ 
+    role = db.relationship("Role", back_populates="users")
+
+
+    def __str__(self):
+        return self.username
 
     def __repr__(self):
         return f"<User(id={self.id}, name={self.username}, email={self.email})>"
@@ -24,6 +34,10 @@ class User(UserMixin, db.Model):
     @classmethod
     def headers(cls):
         return [column.name for column in cls.__table__.columns]
+    
+    @property
+    def role_name(self):
+        return self.role.name if self.role else None
     
 
 class Event(db.Model):
@@ -36,9 +50,13 @@ class Event(db.Model):
     description = db.Column(db.Text, nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    owner = db.relationship('User', backref='events_owned')
+    owner = db.relationship('User', back_populates='events_owned')
  
-    registrants = db.relationship('User', secondary=event_registrations, backref='events_registered_for')
+    registrants = db.relationship('User', secondary=event_registrations, back_populates='events_registered_for')
+
+    
+    def __str__(self):
+        return self.title
 
     def __repr__(self):
         return f"<Event(id={self.id}, name={self.title})>"
@@ -47,3 +65,31 @@ class Event(db.Model):
     def headers(cls):
         return [column.name for column in cls.__table__.columns]
     
+class Role(db.Model):
+    __tablename__ = "roles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False, unique=True)
+    description = db.Column(db.String(120), nullable=False)
+
+    users = db.relationship("User", back_populates="role")
+
+    def __str__(self):
+        return self.name
+    
+
+
+def add_user_roles():
+    roles = {
+        "admin": "Administrator with full access",
+        "moderator": "Moderator with limited admin access",
+        "user": "Regular user with basic privileges",
+        "guest": "Guest with minimal access"
+    }
+    for role_name in roles:
+        if not Role.query.filter_by(name=role_name).first():
+            name = role_name
+            description = roles[role_name]
+            role = Role(name=name, description=description)        
+            db.session.add(role)
+        db.session.commit()

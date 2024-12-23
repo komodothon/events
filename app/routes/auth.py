@@ -3,7 +3,7 @@
 # Handles user authentication, such as login, signup, and logout.
 
 from flask import Blueprint, redirect, url_for, render_template, request, jsonify
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from email_validator import validate_email, EmailNotValidError
 
 from app import db, login_manager
@@ -43,14 +43,16 @@ def login():
     register_form = RegisterForm()
 
     if login_form.validate_on_submit():
+        
         username = login_form.username.data
         password = login_form.password.data
         
         authenticated_user = authenticate_user(username, password)
  
         if authenticated_user:
-            print("user authenticated")
             login_user(authenticated_user)
+            role_name = current_user.role
+            print(type(role_name))
             return redirect(url_for("events.home"))
         else:
             print("Invalid username or password")

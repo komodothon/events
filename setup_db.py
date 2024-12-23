@@ -1,6 +1,6 @@
 from app import db, bcrypt, create_app
 
-from app.models import User, Event, event_registrations
+from app.models import User, Event, event_registrations, Role
 
 from random import randint, choice, sample
 from datetime import datetime, date, timedelta
@@ -14,25 +14,30 @@ def main():
     with app.app_context():
         db.create_all()
 
+        add_user_roles()
         add_sample_users()
         add_sample_events()
         add_sample_event_registrations()
+
 
         db.session.commit()
         db.session.close()
 
 
 def add_sample_users():
+    default_role = 3
     for i in range(1,26):
         username = f"user{i}"
         email = f"user{i}@sample.com"
         password = f"Hello{i}"
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
+
         user = User(
             username=username, 
             email=email, 
-            password=hashed_password
+            password=hashed_password,
+            role_id = default_role
         )  
        
         db.session.add(user)
@@ -82,6 +87,20 @@ def add_sample_event_registrations():
         registrants = sample(available_users, k=registrant_count)
 
         event.registrants.extend(registrants)
+
+def add_user_roles():
+    roles = {
+        "admin": "Administrator with full access",
+        "moderator": "Moderator with limited admin access",
+        "user": "Regular user with basic privileges",
+        "guest": "Guest with minimal access"
+    }
+    for role_name in roles:
+        if not Role.query.filter_by(name=role_name).first():
+            name = role_name
+            description = roles[role_name]
+            role = Role(name=name, description=description)        
+            db.session.add(role)
 
 
 

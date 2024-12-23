@@ -2,6 +2,7 @@
 
 Refactoring with 
 1. [x] Flask blueprints, 
+    - [x] amdin - admin 
     - [x] auth - related to user management, authentication and so on
     - [x] events - related to events, new events, listing of events and event details
     - [x] api - RESTful api for access by other clients
@@ -101,9 +102,11 @@ events_app/
 
 ## 5. Administrative Functions
 - **User Management**
-  - [ ] Admin can manage user accounts (approve, suspend, or delete accounts).
+  - [x] Admin can manage user accounts (approve, suspend, or delete accounts).
 - **Event Oversight**
   - [ ] Admin can review and manage all events on the platform.
+      - [x] edit
+      - [x] delete
 - **Reporting and Analytics**
   - [ ] Admin can access reports on user activity, event participation, and other metrics to help improve the platform.
 
@@ -123,7 +126,7 @@ events_app/
 - **Responsive Design**
   - [ ] Ensure the application is accessible on both desktop and mobile devices.
 - **User-Friendly Navigation**
-  - [ ] Intuitive layout for easy navigation between different sections of the application. (??)
+  - [x] Intuitive layout for easy navigation between different sections of the application.
 
 ## 8. Additional Features (Optional)
 - **Social Media Integration**

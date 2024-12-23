@@ -1,7 +1,19 @@
 """app/services/auth_utils.py"""
 
 from app import db, bcrypt
-from app.models import User
+from app.models import User, Role
+
+def get_all_users():
+    users = User.query.all()
+    return users
+
+def get_all_roles():
+    roles = Role.query.all()
+    return roles
+
+def delete_user(id):
+    user = User.query.get(id)
+    db.session.delete(user)
 
 def create_new_user(username, email, password):
     
