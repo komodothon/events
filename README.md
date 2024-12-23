@@ -11,6 +11,7 @@ Refactoring with
 4. [x] Flask-WTForms
 
 ## 1. Code Structure
+<!--
 events_app/
 │
 ├── app/
@@ -43,7 +44,7 @@ events_app/
 ├── README.md                 # Project overview and details (this document)
 ├── requirements.txt          # Python dependencies
 ├── run.py                    # Entry point for the application
-
+-->
 
 ## 1. User Management
 - **User Registration**
