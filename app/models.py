@@ -1,3 +1,6 @@
+"""app/models.py"""
+
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
@@ -16,12 +19,17 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String, nullable=False)
-    role_id = db.Column(db.Integer(), db.ForeignKey('roles.id'), nullable=False)
 
+
+    role_id = db.Column(db.Integer(), db.ForeignKey('roles.id'), nullable=False, default=3)
+
+    # addition of auth_method to distinguish between OAuth 2.0 and regular signup/login
+    auth_method = db.Column(db.String(), nullable=False, default="password")
+
+    # relationships
+    password = db.relationship("Password", uselist=False, lazy="joined")
     events_owned = db.relationship("Event", back_populates="owner")
     events_registered_for = db.relationship("Event", secondary="event_registrations", back_populates="registrants")
- 
     role = db.relationship("Role", back_populates="users")
 
 
@@ -39,6 +47,14 @@ class User(UserMixin, db.Model):
     def role_name(self):
         return self.role.name if self.role else None
     
+
+class Password(db.Model):
+    __tablename__ = 'passwords'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    password = db.Column(db.String(), nullable=False)
+
 
 class Event(db.Model):
     __tablename__ = 'events'

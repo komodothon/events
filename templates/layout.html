@@ -22,25 +22,52 @@
     <nav class="navbar fixed-top bg-dark navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('events.home') }}">Events Home / Logo</a>
-
+    
             {% if current_user.is_authenticated %}
-                <div class="d-flex">
-                    <a href="{{ url_for('admin.admin_home') }}" class="btn btn-primary me-2">Admin Home</a>
-                    <a href="{{ url_for('events.user_owned_events') }}" class="btn btn-outline-light me-2">My Hosting Events</a>
-                    <a href="{{ url_for('events.user_registered_events') }}" class="btn btn-primary me-2">My Registered Events</a>
-                    <a href="{{ url_for('events.create_event') }}" class="btn btn-primary me-2">Create an Event</a>
-                    <a href="{{ url_for('auth.logout')}}" class="btn btn-primary">Logout</a>
+                <!-- Move My Account dropdown to the far right -->
+                <div class="ms-auto dropdown">
+                    <button 
+                        class="btn btn-primary dropdown-toggle" 
+                        type="button" 
+                        id="userMenu" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false">
+                        My Account
+                    </button>
+                    
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('admin.admin_home') }}">Admin Home</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('events.user_owned_events') }}">My Hosting Events</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('events.user_registered_events') }}">My Registered Events</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('events.create_event') }}">Create an Event</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('auth.user_profile') }}">My Profile</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a>
+                        </li>
+                    </ul>
                 </div>
             {% else %}
-            <div class="d-flex">
-                <a href="{{ url_for('auth.login')}}" class="btn btn-outline-light me-2">Login</a>
-
-            </div>
+                <!-- Move Login button to the far right -->
+                <div class="ms-auto">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light">Login</a>
+                </div>
             {% endif %}
         </div>
     </nav>
-
-
+    
     <header style="padding-top: 60px;">
         <div class="container-header">
             {% block header %}

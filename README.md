@@ -7,8 +7,14 @@ Refactoring with
     - [x] events - related to events, new events, listing of events and event details
     - [x] api - RESTful api for access by other clients
 2. [x] Flask-login, 
-3. [x] Flask-sqlalchemy - implemented.
-4. [x] Flask-WTForms
+3. [ ] OAuth 2.0
+    - [x] Refactoring of database usign Flask Migrate to enable additional type (google oauth) of users
+    - [x] Google OAuth 2.0 integration
+    - [x] Separation of sensitive info into .env files
+
+4. [x] Flask-sqlalchemy - implemented.
+5. [x] Flask-WTForms
+
 
 ## 1. Code Structure
 <!--
@@ -31,37 +37,53 @@ events_app/
 ├── instance/
 │   └── events.db            # SQLite database file (auto-generated)
 │
-├── templates/                # HTML templates
-│   ├── base.html             # Base layout template
-│   ├── home.html             # Home page
-│   ├── login_signup.html     # Login/Signup page
-│   ├── event_details.html    # Event details page
-│   ├── user_owned_events.html
-│   ├── user_registered_events.html
+├── templates/                        # HTML templates
+│   ├── base.html                     # Base layout template
+│   ├── home.html                     # Home page
+│   ├── login_signup.html             # Login/Signup page
+│   ├── event_details.html            # Event details page
+│   ├── user_owned_events.html        # Events created by user
+│   ├── user_registered_events.html   # events registered for by user
+│   ├── create_event.html             # create new event
+│   ├── send_email.html               # send support email to users
+│   ├── user_profile.html             # user view and edit their profile
 │
 ├── static/                   # Static files (CSS, JS, images)
 │
 ├── README.md                 # Project overview and details (this document)
 ├── requirements.txt          # Python dependencies
+├── config.py                 # App configurations
+├── .env                      # Separation of sensitive info
 ├── run.py                    # Entry point for the application
 -->
 
 ## 1. User Management
 - **User Registration**
   - [x] Users can sign up by providing necessary information (username, email, password).  
-  - [ ] User roles can be defined (e.g., regular users and event organizers).
-  - [ ] Credentials of other SM like google/github/... for signing on and logging in.
+  - [x] User roles can be defined (e.g., regular users and event organizers).
+  - [x] OAuth / Credentials of other SM like google/github/... for signing on and logging in.
+      - [x] Google OAuth 2.0
+      - [ ] Github
 
 - **User Signup**
   - [x] Unique Username and unique email choice - incorporation of javascript to dynamically check and update avaiability of input username and email for new account.
 
 - **User Authentication**
+  - [x] Role-based access management ('admin', 'moderator', 'user', 'guest')
   - [x] Users can log in using their credentials.
-  - [ ]Password recovery options for forgotten passwords.
+  - [ ] Password recovery options for forgotten passwords.
+      - [ ] Flast-Mailman library implementation to manage password recovery emails
 
 - **User Profiles**
-  - [ ] Users can view and edit their profiles.
+  - [x] Users can view and edit their profiles.
+  - [x] Change password
   - [x] Users can see a history of events they have hosted and attended.
+
+- **Notifications and Communication**
+  - [x] Automated email notifications and communication for
+    - [x] New event creation
+    - [ ] Event modifications
+    - [x] Setting up of 'mailtrap' online tool to test the email functionality
 
 ## 2. Event Management
 - **Creating Events**
@@ -105,7 +127,7 @@ events_app/
 - **User Management**
   - [x] Admin can manage user accounts (approve, suspend, or delete accounts).
 - **Event Oversight**
-  - [ ] Admin can review and manage all events on the platform.
+  - [x] Admin can review and manage all events on the platform.
       - [x] edit
       - [x] delete
 - **Reporting and Analytics**
@@ -120,7 +142,8 @@ events_app/
 - **Database:**
   - [x] SQLite for storing user and event data.
 - **Authentication:**
-  - [x] secure password by werkzeug tools
+  - [x] secure password by flask_bcrypt tools
+  - [ ] OAuth 2.0 authentication.
   - [ ] JWT (JSON Web Tokens) or session-based authentication for managing user sessions.
 
 ## 7. User Interface

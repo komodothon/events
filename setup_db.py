@@ -1,3 +1,5 @@
+"""setup_db.py"""
+
 from app import db, bcrypt, create_app
 
 from app.models import User, Event, event_registrations, Role

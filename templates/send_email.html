@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    send email
+{% endblock %}
+
+{% block content %}
+
+    <div class="container mt-4">
+        <div class="col-md-6 mx-auto" style="border-radius: 10px; max-width: 600px;">
+            <form class="p-3 border rounded-3 shadow" action="{{ url_for('admin.send_test_email') }}" method="POST">
+                <div class="mb-3">
+                    <label for="to_email" class="form-label">Recipient</label>
+                    <input 
+                        type="email" 
+                        name="to_email" 
+                        id="to_email" 
+                        class="form-control w-100" 
+                        placeholder="Enter recipient's email"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="subject" class="form-label">Subject</label>
+                    <input 
+                        type="text" 
+                        name="subject" 
+                        id="subject" 
+                        class="form-control w-100" 
+                        placeholder="Enter Subject"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="body" class="form-label">Message</label>
+                    <textarea 
+                        name="body" 
+                        id="body" 
+                        class="form-control w-100" 
+                        rows="5" 
+                        placeholder="Write your message here"
+                        required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <input 
+                        type="submit" 
+                        value="Send" 
+                        class="btn btn-primary w-100">
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+{% endblock %}

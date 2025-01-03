@@ -2,6 +2,7 @@
 
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask_login import login_required
+from flask_mailman import EmailMessage
 from datetime import datetime
 
 from app import db, bcrypt
@@ -10,6 +11,7 @@ from app.services.decorators import role_required
 
 from app.services.auth_utils import get_all_users, get_all_roles
 from app.services.db_utils import get_all_events
+from app.services.email import send_email
 
 admin_bp = Blueprint('admin', __name__, template_folder="templates", static_folder="static")
 
@@ -81,7 +83,33 @@ def edit_role(id):
     return redirect(url_for("admin.admin_home"))
 
 
+@admin_bp.route("/send_email", methods=["GET", "POST"])
+@login_required
+@role_required('admin')
+def send_test_email():
+    
+    if request.method == "POST":
+        to_email = [request.form.get("to_email")]
+        subject = request.form.get("subject")
+        body = request.form.get("body")
 
+        if all([to_email, subject, body]):
+            print(f"to_email: {to_email}")
+            print(f"subject: {subject}")
+            print(f"body: {body}")
+
+            try:
+                send_email(to_email, subject, body)
+
+                flash("Email sent successfully.", "success")
+
+                return redirect(url_for("admin.admin_home"))
+            except Exception as e:
+                flash(f"Error during email send: {e}", "danger")
+                return redirect(url_for("admin.admin_home"))
+
+    
+    return render_template("send_email.html")
 
 
 

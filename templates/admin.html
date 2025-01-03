@@ -5,7 +5,16 @@
 {% endblock %}
 
 {% block content %}
-    <h2>Admin Dashboard</h2>
+    <div>
+        <h2>Admin Dashboard</h2>
+
+    </div>
+
+    <div style="margin-top: 20px;">
+        <form action="{{ url_for('admin.send_test_email') }}" method="POST">
+            <input type="submit" value="Send Email">
+        </form>
+    </div>
     <div class="container mt-4">
 
         <!-- Tab Navigation -->

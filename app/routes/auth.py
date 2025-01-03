@@ -1,17 +1,38 @@
-"""app/roputes/auth.py"""
-
+"""app/routes/auth.py"""
 # Handles user authentication, such as login, signup, and logout.
 
-from flask import Blueprint, redirect, url_for, render_template, request, jsonify
+from flask import Blueprint, redirect, url_for, render_template, request, jsonify, flash, session, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from email_validator import validate_email, EmailNotValidError
+from uuid import uuid4
 
-from app import db, login_manager
+from werkzeug.exceptions import Unauthorized
+
+from app import db, login_manager, oauth
+
 from app.models import User
 from app.services import *
+from app.services.auth_utils import change_password
 from app.forms import RegisterForm, LoginForm
 
 auth_bp = Blueprint("auth", __name__, template_folder="../../templates")
+
+google = None
+
+# Configure Google OAuth using current_app to fetch configuration values
+@auth_bp.before_app_request
+def configure_google_oauth():
+
+    global google
+    if google is None:
+        google = oauth.register(
+            name="google",
+            client_id =current_app.config['GOOGLE_CLIENT_ID'],
+            client_secret=current_app.config['GOOGLE_CLIENT_SECRET'],
+            server_metadata_url=current_app.config['GOOGLE_DISCOVERY_URL'],
+            client_kwargs={"scope": "openid email profile"},
+        )
+
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
@@ -29,7 +50,6 @@ def register():
         new_user = create_new_user(username, email, password)
         if new_user:
             login_user(new_user)
-
             return redirect(url_for("events.home"))
 
     return render_template("login_signup.html", login_form=login_form, register_form=register_form)
@@ -52,14 +72,69 @@ def login():
         if authenticated_user:
             login_user(authenticated_user)
             role_name = current_user.role
-            print(type(role_name))
             return redirect(url_for("events.home"))
         else:
-            print("Invalid username or password")
-            error = "Invalid username or password"
-            return render_template("login_signup.html", error=error, login_form=login_form, register_form=register_form)
+            flash("Invalid username or password", "danger")
+            return render_template("login_signup.html", login_form=login_form, register_form=register_form)
     
-    return render_template("login_signup.html", error=error, login_form=login_form, register_form=register_form)
+    return render_template("login_signup.html", login_form=login_form, register_form=register_form)
+
+
+@auth_bp.route("/google_login")
+def google_login():
+    """Initiate Google OAuth login."""
+    nonce = uuid4().hex
+    session['nonce'] = nonce
+
+    redirect_url = url_for("auth.google_callback", _external=True)
+    return google.authorize_redirect(redirect_url, nonce=nonce)
+
+
+@auth_bp.route("/google_callback")
+def google_callback():
+    """Handle callback from Google"""
+    token = google.authorize_access_token()
+
+    if not token:
+        flash("Authorization failed.", "danger")
+        return redirect(url_for("auth.login"))
+
+    nonce = session.pop("nonce", None)
+    
+    if not nonce:
+        flash("Invalid nonce. Please try logging in again.", "danger")
+        return redirect(url_for("auth.login"))
+
+    try:
+        user_info = google.parse_id_token(token, nonce=nonce)
+        print(f"user_info: {user_info}")
+    except Exception as e:
+        flash(f"Failed to parse ID token: {e}", "danger")
+        return redirect(url_for("auth.login"))
+
+    if user_info:        
+
+        email = user_info.get('email')
+        username = email.split("@")[0]
+
+        # check if user already exists in database
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            # creates new user in database for this google OAuth user
+            user = User(
+                username = username,
+                email = email,
+                auth_method = 'oauth',
+            )
+            db.session.add(user)
+            db.session.commit()
+        
+        # log the user in
+        login_user(user)            
+        return redirect(url_for("events.home"))
+    flash("Google authentication failed.", "error")
+    return redirect(url_for("auth.login"))
+
 
 @auth_bp.route("/logout")
 @login_required
@@ -67,10 +142,24 @@ def logout():
     logout_user()
     return redirect(url_for("events.home"))
 
+"""Password recovery"""
 @auth_bp.route("/password_recovery", methods=["GET", "POST"])
 def password_recovery():
 
     return render_template("password_recovery.html")
+
+"""Profile"""
+@auth_bp.route("/user_profile", methods=["GET", "POST"])
+@login_required
+def user_profile():
+
+    if request.method == "POST":
+        password = request.form.get("password")
+        change_password(current_user, password)
+
+    return render_template("user_profile.html")
+
+
 
 """AJAX routes"""
 @auth_bp.route('/check_username')
@@ -112,3 +201,5 @@ def check_email():
     
     else:
         return jsonify({'valid': True, 'available': available, 'message': 'Valid but not available email address '}), 409
+    
+
