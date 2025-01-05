@@ -1,7 +1,12 @@
 """app/services/auth_utils.py"""
 
+from flask import current_app, url_for
+from itsdangerous import URLSafeTimedSerializer
+
 from app import db, bcrypt
 from app.models import User, Role, Password
+from app.services.email import send_email
+
 
 def get_all_users():
     users = User.query.all()
@@ -54,3 +59,32 @@ def hash_password(password):
 
 def check_password_hash(input_password, hashed_password):
     return bcrypt.check_password_hash(input_password, hashed_password)
+
+
+"""Password reset helper functions"""
+def generate_reset_token(email):
+    serializer = URLSafeTimedSerializer(secret_key=current_app.config["SECRET_KEY"])
+    return serializer.dumps(email, salt="password-reset-salt")
+
+def verify_reset_token(token, expiration=3600):
+    serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+    try:
+        email = serializer.loads(token, salt="password-reset-salt", max_age=expiration)
+    except Exception:
+        return None
+    return email
+
+def send_password_reset_email(user):
+    token = generate_reset_token(user.email)
+    print(f"generated token to send {token}")
+    reset_url = url_for("auth.reset_password", token=token, _external=True)
+
+    print(f"reset url to be sent: {reset_url}")
+    recipient = [user.email]
+    subject = "Reset Password request"
+    body = f"""
+        To reset your password, visit the following link:{reset_url}
+
+        If you did not make this request, please ignore this email.
+        """
+    send_email(recipient, subject, body)

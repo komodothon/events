@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 
 from app import db, login_manager
 from app.services.db_utils import *
-from app.services.email import email_create_event
+from app.services.email import send_email
 
 from app.forms import CreateEventForm
 
@@ -69,7 +69,7 @@ def create_event():
         subject = f"Event: {title} created"
         body = f"Congrats. This is a confirmation  email for the event creation: {title}"
 
-        email_create_event(recipient, subject, body,)
+        send_email(recipient, subject, body)
 
         return redirect(url_for("events.home"))
 

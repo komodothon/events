@@ -14,6 +14,7 @@ Refactoring with
 
 4. [x] Flask-sqlalchemy - implemented.
 5. [x] Flask-WTForms
+6. [x] Custom decorators to implement access controls and enforce certain rules.
 
 
 ## 1. Code Structure
@@ -71,8 +72,8 @@ events_app/
 - **User Authentication**
   - [x] Role-based access management ('admin', 'moderator', 'user', 'guest')
   - [x] Users can log in using their credentials.
-  - [ ] Password recovery options for forgotten passwords.
-      - [ ] Flast-Mailman library implementation to manage password recovery emails
+  - [x] Password reset options for forgotten passwords.
+      - [x] Flast-Mailman library implementation to manage reset password emails
 
 - **User Profiles**
   - [x] Users can view and edit their profiles.
@@ -160,4 +161,6 @@ events_app/
 - **Feedback and Reviews**
   - [ ] Users can leave feedback or reviews for events they attended.
 
+## Libraries and requirements
 
+## Routes

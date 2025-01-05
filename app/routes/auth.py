@@ -12,8 +12,9 @@ from app import db, login_manager, oauth
 
 from app.models import User
 from app.services import *
-from app.services.auth_utils import change_password
-from app.forms import RegisterForm, LoginForm
+from app.services.auth_utils import change_password, verify_reset_token, send_password_reset_email
+from app.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm
+from app.services.decorators import logout_required
 
 auth_bp = Blueprint("auth", __name__, template_folder="../../templates")
 
@@ -58,7 +59,7 @@ def register():
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     """ User Login"""
-    error = None
+
     login_form = LoginForm()
     register_form = RegisterForm()
 
@@ -79,7 +80,7 @@ def login():
     
     return render_template("login_signup.html", login_form=login_form, register_form=register_form)
 
-
+"""Google OAuth 2.0 routes"""
 @auth_bp.route("/google_login")
 def google_login():
     """Initiate Google OAuth login."""
@@ -136,17 +137,58 @@ def google_callback():
     return redirect(url_for("auth.login"))
 
 
+"""Logout route"""
 @auth_bp.route("/logout")
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("events.home"))
 
-"""Password recovery"""
-@auth_bp.route("/password_recovery", methods=["GET", "POST"])
-def password_recovery():
 
-    return render_template("password_recovery.html")
+"""Reset Password"""
+@auth_bp.route("/reset_request", methods=["GET", "POST"])
+@logout_required
+def reset_request():
+    form = RequestResetForm()
+
+    if form.validate_on_submit():
+        email = form.email.data
+        user = User.query.filter_by(email=email).first()
+
+        if user.auth_method == "oauth":
+            flash("Please login with oauth 2.0 link provided!", "danger")
+            return redirect(url_for("auth.login"))
+
+        if user and user.auth_method == "password":
+            send_password_reset_email(user)
+            flash("A password reset link will be sent to this email after verification", "info")
+            return redirect(url_for("auth.login"))
+
+    return render_template("reset_request.html", form=form)
+
+@auth_bp.route("/reset_password/<token>", methods=["GET", "POST"])
+@logout_required
+def reset_password(token):
+    email = verify_reset_token(token)
+    print(f"email verified: {email}")
+
+    if not email:
+        flash("Invalid or expired token", "danger")
+        return redirect(url_for("auth.reset_request"))
+    
+    user = User.query.filter_by(email=email).first_or_404()
+    print(f"User found: {user}")
+
+    form = ResetPasswordForm()
+
+    if form.validate_on_submit():
+        new_password = form.new_password.data
+        change_password(user, new_password)
+        flash("Your password has been changed successfully!", "success")
+
+        return redirect(url_for("auth.login"))
+    return render_template("reset_password.html", token=token, form=form)
+            
 
 """Profile"""
 @auth_bp.route("/user_profile", methods=["GET", "POST"])

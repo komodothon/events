@@ -38,23 +38,7 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     oauth.init_app(app)
 
-    # Configure Google OAuth using app config values
-    google = oauth.register(
-        name = "google",
-
-        client_id=app.config['GOOGLE_CLIENT_ID'],
-        client_secret=app.config['GOOGLE_CLIENT_SECRET'],
-        authorize_url='https://accounts.google.com/o/oauth2/auth',
-        authorize_params=None,
-        access_token_url='https://oauth2.googleapis.com/token',
-        refresh_token_url=None,
-        client_kwargs={'scope': 'openid profile email'},
-        api_base_url='https://www.googleapis.com/oauth2/v1/',
-        jwks_url="https://www.googleapis.com/oauth2/v3/certs",
-        server_metadata_url= 'https://accounts.google.com/.well-known/openid-configuration',
-    )
-
-
+   
     # login configurations
     login_manager.login_view = "auth.login"
     login_manager.login_message = "Please login to access this page."

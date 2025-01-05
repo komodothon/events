@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="col-md-6" style="border-radius: 10px; padding-top: 60px; max-width: 400px;">
+            <form class="p-3 border rounded-3 shadow" action="{{ url_for('auth.reset_request') }}" method="POST">
+                <h3>Reset Password</h3>
+                <div class="mb-3">
+                    {{ form.hidden_tag() }}
+                </div>
+                <div class="mb-3">
+                    {{ form.email.label }}
+                    {{ form.email() }}
+                </div>
+                
+                <div class="d-grid">
+                    {{ form.submit() }}
+                </div>
+                
+            </form>
+        </div>
+    </div>
+{% endblock %}

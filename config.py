@@ -7,14 +7,14 @@ load_dotenv()
 
 class Config:
     # Secret key for session management 
-    SECRET_KEY = "app_secret_key"
+    SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
 
     # SQLAlchemy settings
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///events.db'
+    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///events.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Email server configurations (for email features)
-    MAIL_SERVER = "sandbox.smtp.mailtrap.io"
+    MAIL_SERVER = os.getenv("MAIL_SERVER","sandbox.smtp.mailtrap.io")
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False

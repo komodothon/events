@@ -17,3 +17,13 @@ def role_required(role_name):
     return decorator
 
 
+def logout_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.is_authenticated:
+            flash("You're logged in.", "info")
+            return redirect(url_for("events.home"))
+        return f(*args, **kwargs)
+    return decorated_function
+    
+
