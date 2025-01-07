@@ -10,13 +10,25 @@
                         <h1 class="h4">{{ event.title }}</h1>
                     </div>
                     <div class="card-body p-4">
+                        {% if event.image_path %}
+                            <img src="{{ url_for('static', filename=event.image_path.split('static/')[1]) }}" 
+                                 alt="{{ event.title }}" 
+                                 class="img-fluid mb-4" 
+                                 style="max-height: 400px; object-fit: cover; width: 100%;">
+                        {% endif %}
                         <p class="lead">{{ event.description }}</p>
                         <hr>
-                        <p><strong>Date:</strong> {{ event.date }}</p>
+                        <p><strong>Date:</strong> {{ event.date.strftime('%d %B %Y') }}</p>
                         <p><strong>Location:</strong> {{ event.location }}</p>
                     </div>
                     <div class="card-footer text-center">
                         <!-- Optional buttons or links could go here -->
+                        <!-- Edit Button to Trigger Modal -->
+                        {% if event in current_user.events_owned %}
+                            <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editEventModal">
+                                Edit Event
+                            </button>
+                        {% endif %}
                         <a href="{{ url_for('events.home') }}" class="btn btn-secondary">Back to Events</a>
                         <a href="{{ url_for('events.register_for_event', event_id=event.id) }}" class="btn btn-secondary">Register</a>
                     </div>
@@ -24,4 +36,57 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal for Editing Event -->
+    <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('events.event_details', event_id=event.id) }}" method="POST" enctype="multipart/form-data">                   
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Event Title</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ event.title }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Event Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" required>{{ event.description }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Event Date</label>
+                            <input type="datetime-local" class="form-control" id="date" name="date" value="{{ event.date.strftime('%Y-%m-%dT%H:%M') }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Event Location</label>
+                            <input type="text" class="form-control" id="location" name="location" value="{{ event.location }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Event Image</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                            {% if event.image_path %}
+                                <small class="text-muted">Current Image: {{ event.image_path.split('static/')[1] }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    {% if request.args.get('edit') == 'true' %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var editModal = new bootstrap.Modal(document.getElementById('editEventModal'));
+                editModal.show();
+            });
+        </script>
+    {% endif %}
 {% endblock %}

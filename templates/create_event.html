@@ -19,7 +19,7 @@
 
 
                     <!-- Create event form (Flaskform) -->
-                     <form action="{{ url_for('events.create_event') }}" method="POST">
+                     <form action="{{ url_for('events.create_event') }}" method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             {{ form.hidden_tag() }}
 
@@ -36,6 +36,11 @@
                             <div class="mb-3">
                                 {{ form.location.label(class="form-label") }}
                                 {{ form.location(class="form-control") }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.image.label(class="form-label") }}
+                                {{ form.image(class="form-control") }}
                             </div>
 
                             <div class="mb-3">
