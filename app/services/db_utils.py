@@ -4,13 +4,14 @@ from app import db
 from app.models import Event, User
 
 
-def create_new_event(title, date, location, description, owner):
+def create_new_event(title, date, location, description, owner, image_path):
     event = Event(
         title=title, 
         date=date, 
         location=location, 
         description=description, 
-        owner_id=owner.id
+        owner_id=owner.id,
+        image_path = image_path,
     )  
 
     db.session.add(event)
@@ -43,4 +44,9 @@ def user_event_registration(event_id, user):
 def get_all_events():
     return db.session.query(Event).all()
 
+def edit_event(event):
+    pass
 
+def delete_event(event):
+    db.session.delete(event)
+    db.session.commit()

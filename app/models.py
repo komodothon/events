@@ -65,7 +65,7 @@ class Event(db.Model):
     location = db.Column(db.String(80), nullable=False)
     description = db.Column(db.Text, nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    image_location = db.Column(db.String(120), nullable=True)
+    image_path = db.Column(db.String(120), nullable=True)
 
     owner = db.relationship('User', back_populates='events_owned')
  

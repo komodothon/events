@@ -53,7 +53,17 @@
             {% for event in events %} 
                 <div class="col">
                     <div class="card h-100">
-                        <img src="{{ url_for('static', filename='image/pic_placeholder.png') }}?v=1" class="card-img-top" alt="...">
+                        {% if event.image_path %}
+                            <img src="{{ url_for('static', filename=event.image_path.split('static/')[1]) }}" 
+                                    alt="{{ event.title }}" 
+                                    class="card-img-top img-fluid"
+                                    style="height: 150px; object-fit: cover;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='image/pic_placeholder.png') }}?v=1" 
+                                    alt="Placeholder image"
+                                    class="card-img-top img-fluid"
+                                    style="height: 150px; object-fit: cover;">
+                        {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">
                                 <a href="{{ url_for ('events.event_details', event_id=event.id) }}">

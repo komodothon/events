@@ -153,13 +153,18 @@ def reset_request():
 
     if form.validate_on_submit():
         email = form.email.data
+        print(f"given email: {email}")
         user = User.query.filter_by(email=email).first()
+        print(f"user: {user}")
 
+        if not user:
+            flash("User not found.", "warning")
+            return redirect(url_for("auth.login"))
         if user.auth_method == "oauth":
             flash("Please login with oauth 2.0 link provided!", "danger")
             return redirect(url_for("auth.login"))
 
-        if user and user.auth_method == "password":
+        if user.auth_method == "password":
             send_password_reset_email(user)
             flash("A password reset link will be sent to this email after verification", "info")
             return redirect(url_for("auth.login"))
