@@ -8,6 +8,7 @@
                 <div class="card shadow-lg">
                     <div class="card-header text-center bg-primary text-white">
                         <h1 class="h4">{{ event.title }}</h1>
+                        <h2 class="h2">{{ event.event_type }}</h2>
                     </div>
                     <div class="card-body p-4">
                         {% if event.image_path %}
@@ -50,6 +51,14 @@
                         <div class="mb-3">
                             <label for="title" class="form-label">Event Title</label>
                             <input type="text" class="form-control" id="title" name="title" value="{{ event.title }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="event_type" class="form-label">Event Type</label>
+
+                            <select name="event_type" id="event_type", class="form-select">
+                                <option value="VIRTUAL" {% if event.event_type == "VIRTUAL" %}selected{% endif %}>Virtual</option>
+                                <option value="IN-PERSON"{% if event.event_type == "IN-PERSON" %}selected{% endif %}>In-person</option>
+                            </select>                        
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Event Description</label>

@@ -56,32 +56,6 @@ class Password(db.Model):
     password = db.Column(db.String(), nullable=False)
 
 
-class Event(db.Model):
-    __tablename__ = 'events'
-
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(80), nullable=False)
-    date = db.Column(db.DateTime, nullable=False)
-    location = db.Column(db.String(80), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    image_path = db.Column(db.String(120), nullable=True)
-
-    owner = db.relationship('User', back_populates='events_owned')
- 
-    registrants = db.relationship('User', secondary=event_registrations, back_populates='events_registered_for')
-
-    
-    def __str__(self):
-        return self.title
-
-    def __repr__(self):
-        return f"<Event(id={self.id}, name={self.title})>"
-    
-    @classmethod
-    def headers(cls):
-        return [column.name for column in cls.__table__.columns]
-    
 class Role(db.Model):
     __tablename__ = "roles"
 
@@ -94,6 +68,50 @@ class Role(db.Model):
     def __str__(self):
         return self.name
     
+
+class Event(db.Model):
+    __tablename__ = 'events'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(80), nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+
+    # location = db.Column(db.String(80), nullable=False)
+    location_id = db.Column(db.Integer, db.ForeignKey('locations.id'))
+    description = db.Column(db.Text, nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    image_path = db.Column(db.String(120), nullable=True)
+
+    event_type = db.Column(db.String(40), default="in_person")
+
+    # relationships
+    owner = db.relationship('User', back_populates='events_owned')
+    registrants = db.relationship('User', secondary=event_registrations, back_populates='events_registered_for')
+    location = db.relationship("Location", back_populates="events")
+
+    
+    def __str__(self):
+        return self.title
+
+    def __repr__(self):
+        return f"<Event(id={self.id}, name={self.title})>"
+    
+    @classmethod
+    def headers(cls):
+        return [column.name for column in cls.__table__.columns]
+    
+
+class Location(db.Model):
+    __tablename__ = "locations"
+
+    id = db.Column(db.Integer, primary_key=True) 
+    place_id = db.Column(db.String(255), unique=True, nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    address = db.Column(db.String(255), nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+
+    events = db.relationship("Event", back_populates="location", lazy="dynamic")
 
 
 def add_user_roles():

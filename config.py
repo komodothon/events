@@ -30,6 +30,7 @@ class Config:
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
+
 class DevConfig(Config):
     DEBUG = True
     MAIL_DEBUG = True

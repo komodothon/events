@@ -50,11 +50,21 @@ def event_details(event_id):
         return redirect(url_for("events.home"))
     
     if request.method == "POST":
+        print(request.form)
         try:
             event.title = request.form.get("title", event.title)
+            
+            
+            event_type = request.form.get("event_type")
+            if event_type not in ["VIRTUAL", "IN-PERSON"]:
+                return f"Invalid event type: {event_type}", 400
+            
+            event.event_type = event_type
+            print(f"event_tyoe: {event.event_type}")
+            
             event.description = request.form.get("description", event.description)
             event.date = datetime.strptime(request.form["date"], "%Y-%m-%dT%H:%M")
-            event.location = request.form.get("location", event.location)
+            # event.location = request.form.get("location", event.location)
 
             # Check for new image upload
             if "image" in request.files and request.files["image"].filename:
@@ -102,6 +112,7 @@ def create_event():
         print(request.form.items())
         # print("create event: validated")
         title = form.title.data
+        event_type = form.event_type.data
         date = form.date.data
         location = form.location.data
         description = form.description.data
@@ -125,7 +136,7 @@ def create_event():
                 flash("Error while saving file.", "danger")
                 return redirect(url_for("events.create_event"))
             
-        create_new_event(title, date, location, description, current_user, image_path)
+        create_new_event(title, event_type, date, location, description, current_user, image_path)
 
         recipient = [current_user.email]
         subject = f"Event: {title} created"

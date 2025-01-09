@@ -4,9 +4,10 @@ from app import db
 from app.models import Event, User
 
 
-def create_new_event(title, date, location, description, owner, image_path):
+def create_new_event(title, event_type, date, location, description, owner, image_path):
     event = Event(
-        title=title, 
+        title=title,
+        event_type=event_type, 
         date=date, 
         location=location, 
         description=description, 
