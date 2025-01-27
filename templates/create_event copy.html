@@ -1,0 +1,115 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Create Event
+{% endblock %}
+
+{% block content %}
+<div class="bg-light d-flex align-items-center min-vh-100">
+    <div class="container d-flex justify-content-center">
+        <div class="card shadow-lg" style="max-width: 600px; width: 100%; position: relative;">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4">Create Event</h2>
+                <button type="button" class="btn-close" aria-label="Close" 
+                        style="position: absolute; top: 20px; right: 20px;" onclick="window.history.back();"></button>
+
+                <!-- Create Event Form -->
+                <form action="{{ url_for('events.create_event') }}" method="POST" enctype="multipart/form-data">
+                    {{ event_form.hidden_tag() }}
+                    {{ location_form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ event_form.title.label(class="form-label") }}
+                        {{ event_form.title(class="form-control") }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ event_form.event_type.label(class="form-label") }}
+                        {{ event_form.event_type(class="form-control") }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ event_form.date.label(class="form-label") }}
+                        {{ event_form.date(class="form-control") }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ location_form.name.label(class="form-label") }}
+                        {{location_form.name(class="form-control") }}
+                        <!-- <label for="locationInput" class="form-label">Search Location</label>
+                        <input id="locationInput" class="form-control" type="text" placeholder="Enter a location"> -->
+                    </div>
+
+                    <div id="map" style="height: 400px; width: 100%;" class="mb-3"></div>
+
+                    <!-- Hidden Fields for Location Data -->
+                    <input type="hidden" name="place_id" id="place_id">
+                    <input type="hidden" name="name" id="name">
+                    <input type="hidden" name="address" id="address">
+                    <input type="hidden" name="latitude" id="latitude">
+                    <input type="hidden" name="longitude" id="longitude">
+
+                    <div class="mb-3">
+                        {{ event_form.image.label(class="form-label") }}
+                        {{ event_form.image(class="form-control") }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ event_form.description.label(class="form-label") }}
+                        {{ event_form.description(class="form-control") }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ event_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <script>
+    let map, marker, autocomplete;
+
+    function initMap() {
+        const defaultLocation = { lat: 18.0, lng: 83.0 }; // Default location
+        map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 12,
+            center: defaultLocation,
+        });
+
+        marker = new google.maps.Marker({
+            position: defaultLocation,
+            map: map,
+        });
+
+        // Autocomplete setup
+        const input = document.getElementById("locationInput");
+        autocomplete = new google.maps.places.Autocomplete(input);
+        autocomplete.bindTo("bounds", map);
+
+        autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+
+            if (!place.geometry || !place.geometry.location) {
+                alert("No details available for the input: '" + place.name + "'");
+                return;
+            }
+
+            // Update map and marker to the selected place
+            map.setCenter(place.geometry.location);
+            map.setZoom(15); // Zoom in to the selected location
+            marker.setPosition(place.geometry.location);
+
+            // Update location details in hidden fields
+            document.getElementById("latitude").value = place.geometry.location.lat();
+            document.getElementById("longitude").value = place.geometry.location.lng();
+            document.getElementById("place_id").value = place.place_id || '';
+            document.getElementById("name").value = place.name || '';
+            document.getElementById("address").value = place.formatted_address || '';
+        });
+    }
+</script> -->
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFRco5Dun0ig8Y-UXiZ9w289aI1LG72HE&libraries=places&callback=initMap" async defer></script>
+{% endblock %}

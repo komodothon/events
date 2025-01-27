@@ -7,7 +7,7 @@ Refactoring with
     - [x] events - related to events, new events, listing of events and event details
     - [x] api - RESTful api for access by other clients
 2. [x] Flask-login, 
-3. [ ] OAuth 2.0
+3. [x] OAuth 2.0
     - [x] Refactoring of database usign Flask Migrate to enable additional type (google oauth) of users
     - [x] Google OAuth 2.0 integration
     - [x] Separation of sensitive info into .env files
@@ -96,10 +96,10 @@ events_app/
     - [x] description
     - [ ] maximum capacity
     - [ ] categories.
-  - [ ] Option to upload images or promotional material for the event.
+  - [x] Option to upload images or promotional material for the event.
 
 - **Managing Events**
-  - [ ] Event organizers can edit or delete their events.
+  - [x] Event organizers can edit or delete their events.
   - [ ] Ability to view RSVP or registration statistics.
   - [ ] Manage attendees (e.g., sending updates or notifications).
 
@@ -144,7 +144,7 @@ events_app/
   - [x] SQLite for storing user and event data.
 - **Authentication:**
   - [x] secure password by flask_bcrypt tools
-  - [ ] OAuth 2.0 authentication.
+  - [x] OAuth 2.0 authentication.
   - [ ] JWT (JSON Web Tokens) or session-based authentication for managing user sessions.
 
 ## 7. User Interface

@@ -1,15 +1,15 @@
 """app/services/db_utils.py"""
 
 from app import db
-from app.models import Event, User
+from app.models import Event, User, Location
 
 
-def create_new_event(title, event_type, date, location, description, owner, image_path):
+def create_new_event(title, event_type, date, location_id, description, owner, image_path):
     event = Event(
         title=title,
         event_type=event_type, 
         date=date, 
-        location=location, 
+        location_id=location_id, 
         description=description, 
         owner_id=owner.id,
         image_path = image_path,
@@ -51,3 +51,20 @@ def edit_event(event):
 def delete_event(event):
     db.session.delete(event)
     db.session.commit()
+
+def create_new_location(place_id, name, address, latitude, longitude):
+    location = Location(
+        place_id=place_id, 
+        name=name, 
+        address=address, 
+        latitude=latitude, 
+        longitude=longitude,
+    )
+    db.session.add(location)
+    db.session.commit()
+
+    return location
+
+def get_location(place_id):
+    location = Location.query.filter_by(place_id=place_id).first()
+    return location

@@ -21,10 +21,11 @@ class EventForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired()])
     event_type = SelectField("Event type - Virtual/In-person", validators=[DataRequired()], choices=("VIRTUAL", "IN-PERSON"))
     date = DateTimeLocalField("Date", format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
-    location = StringField("Location", validators=[DataRequired()])
+    # location = StringField("Location", validators=[DataRequired()])
     image = FileField('Event Flyer/Image', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')])
     description = TextAreaField("Description", validators=[DataRequired()])
     submit = SubmitField("Create Event")
+
 
 class RequestResetForm(FlaskForm):
     email = EmailField("Email", validators=[DataRequired()])

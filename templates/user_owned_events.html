@@ -30,7 +30,7 @@
                             <td>{{ event.description }}</td>
                             <td class="text-center">
                                 <!-- Edit Icon -->
-                                <a href="{{ url_for('events.event_details', event_id=event.id, edit='true') }}" class="btn btn-info btn-sm">
+                                <a href="{{ url_for('events.edit_event', event_id=event.id, edit='true') }}" class="btn btn-info btn-sm">
                                     <i class="fas fa-edit"></i>
                                 </a>
 

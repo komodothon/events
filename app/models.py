@@ -113,6 +113,8 @@ class Location(db.Model):
 
     events = db.relationship("Event", back_populates="location", lazy="dynamic")
 
+    def __repr__(self):
+        return f"{self.name}, {self.address}"
 
 def add_user_roles():
     roles = {

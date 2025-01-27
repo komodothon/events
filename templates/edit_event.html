@@ -1,0 +1,189 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Edit Event
+{% endblock %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <form action="{{ url_for('events.edit_event', event_id=event.id) }}" method="POST" enctype="multipart/form-data">                   
+
+                            <h4 class="mb-4">Edit Event</h4>
+
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Event Title</label>
+                                <input type="text" class="form-control" id="title" name="title" value="{{ event.title }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="event_type" class="form-label">Event Type</label>
+                                <select name="event_type" id="event_type" class="form-select">
+                                    <option value="VIRTUAL" {% if event.event_type == "VIRTUAL" %}selected{% endif %}>Virtual</option>
+                                    <option value="IN-PERSON" {% if event.event_type == "IN-PERSON" %}selected{% endif %}>In-person</option>
+                                </select>                        
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Event Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="4" required>{{ event.description }}</textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Event Date</label>
+                                <input type="datetime-local" class="form-control" id="date" name="date" value="{{ event.date.strftime('%Y-%m-%dT%H:%M') }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="autocomplete" class="form-label">Location</label>
+                                <input id="autocomplete" class="form-control" type="text" value="{{ event.location }}" onfocus="resetLocationField()">
+                            </div>
+
+                            <div id="place-details" class="mt-3" style="display: block;">
+                                <h5>Selected Place Details</h5>
+                                <!-- Hidden fields for location details -->
+                                <input type="hidden" id="place-id" name="place_id">
+                                <input type="hidden" id="place-name" name="name">
+                                <input type="hidden" id="place-address" name="address">
+                                <input type="hidden" id="place-latitude" name="latitude" value="{{ event.location.latitude }}">
+                                <input type="hidden" id="place-longitude" name="longitude" value="{{ event.location.longitude }}">
+        
+                            </div>
+
+                            <div id="map" class="mb-3 border rounded" style="height: 400px; width: 100%;"></div>
+
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Event Image</label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                {% if event.image_path %}
+                                    <small class="text-muted">Current Image: {{ event.image_path.split('static/')[1] }}</small>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary me-2">Save Changes</button>
+                                <a href="{{ url_for('events.event_details', event_id=event.id) }}" class="btn btn-secondary">Close</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        let map, marker, autocomplete;
+    
+        function initMap() {
+            console.log("Initializing map...");
+
+            const initial_lat = parseFloat(document.getElementById("place-latitude").value);
+            const initial_lng = parseFloat(document.getElementById("place-longitude").value);
+    
+            // Default location (India)
+            const initialLocation = { lat: initial_lat, lng: initial_lng };
+    
+            // Create the map
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: initialLocation,
+                zoom: 12,
+                mapId: "DEMO_MAP_ID",
+            });
+    
+            // Create the AdvancedMarkerElement
+            marker = new google.maps.marker.AdvancedMarkerElement({
+                map: map,
+                position: initialLocation,
+                title: "Selected Location",
+            });
+            
+            initAutocomplete();
+            console.log("Map initialized.");
+        }
+       
+        function initAutocomplete() {
+            // Create the autocomplete object
+            autocomplete = new google.maps.places.Autocomplete(
+                document.getElementById("autocomplete"), {
+                    types: ["establishment"],
+                    componentRestrictions: {'country': 'IN'},
+                    fields: ["place_id", "name", "formatted_address", "geometry"],
+                }
+            );
+    
+            // Add a listener to handle place selection
+            autocomplete.addListener("place_changed", onPlaceChanged);
+        }
+    
+        function onPlaceChanged() {
+            const place = autocomplete.getPlace();
+    
+            if (place.geometry) {
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+    
+                // Display selected place details
+                document.getElementById("place-id").value = place.place_id || "N/A";
+                document.getElementById("place-name").value = place.name || "N/A";
+                document.getElementById("place-address").value = place.formatted_address || "N/A";
+                document.getElementById("place-latitude").value = lat;
+                document.getElementById("place-longitude").value = lng;
+    
+                // Display the place details section
+                document.getElementById("place-details").style.display = "block";
+    
+                console.log("Place selected: ", {
+                            google_place_id: place.place_id,
+                            name: place.name,
+                            address: place.formatted_address,
+                            latitude: lat,
+                            longitude: lng,
+    
+                        });
+    
+                // Update map and marker
+                updateMap(lat, lng);
+            }
+
+            function updateMap(lat, lng) {
+                const location = { lat: parseFloat(lat), lng: parseFloat(lng) };
+        
+                // Update map center and marker position
+                map.setCenter(location);
+                map.setZoom(15);
+                marker.position = location; // Update marker position
+            }
+        }
+    
+    
+    </script>
+
+    <script>
+
+        let hasFocused = false;
+
+        function resetLocationField() {
+
+            if (!hasFocused) {
+                const locationField = document.getElementById("autocomplete");
+                console.log(locationField.value);
+                locationField.value = "";
+                
+                hasFocused = true;
+
+            }
+
+        }
+    </script>
+    
+    <script async
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFRco5Dun0ig8Y-UXiZ9w289aI1LG72HE&loading=async&libraries=places,marker&callback=initMap">
+    </script>
+{% endblock %}

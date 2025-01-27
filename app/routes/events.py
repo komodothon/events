@@ -41,62 +41,88 @@ def user_registered_events():
     return "username not found!"
 
 @events_bp.route("/event_details/<int:event_id>", methods=["GET", "POST"])
-def event_details(event_id):
+def event_details(event_id):   
     """ event details page """
     event = get_event_detail(event_id)
 
     if not event:
         flash("Event not found.", "danger")
         return redirect(url_for("events.home"))
-    
+
+    return render_template("event_details.html", event=event)
+
+
+@events_bp.route("/edit_event/<int:event_id>", methods=["GET", "POST"])
+def edit_event(event_id):
+    event = get_event_detail(event_id)
+
     if request.method == "POST":
-        print(request.form)
+        
         try:
             event.title = request.form.get("title", event.title)
-            
-            
+
             event_type = request.form.get("event_type")
             if event_type not in ["VIRTUAL", "IN-PERSON"]:
                 return f"Invalid event type: {event_type}", 400
             
             event.event_type = event_type
-            print(f"event_tyoe: {event.event_type}")
-            
+
             event.description = request.form.get("description", event.description)
             event.date = datetime.strptime(request.form["date"], "%Y-%m-%dT%H:%M")
-            # event.location = request.form.get("location", event.location)
 
-            # Check for new image upload
+            print("edit_event form submitted")
+
+            # location details
+            google_place_id = request.form.get("place_id")
+            name = request.form.get("name")
+            address = request.form.get("address")
+            latitude = request.form.get("latitude")
+            longitude = request.form.get("longitude")
+
+            location_id = None
+            if google_place_id:
+                location = get_location(google_place_id)
+                if not location:
+                    location = create_new_location(google_place_id, name, address, latitude, longitude)
+                location_id = location.id
+            else:
+                # error handling
+                location_id = 6
+
+            event.location_id = location_id
+            print(f"location_id: {event.location_id}")
+            
+            # image handling
             if "image" in request.files and request.files["image"].filename:
-                print(f"request.files: {request.files}")
                 file = request.files["image"]
                 filename = secure_filename(file.filename)
                 upload_folder = os.path.join(current_app.root_path, "../static/uploads/event_images")
 
-                # Ensure the directory exists
+                # Ensurin that the folder exists
                 os.makedirs(upload_folder, exist_ok=True)
 
-                # Delete the old image if it exists
+                # Delete old image from folder, if any
                 if event.image_path and os.path.exists(os.path.join(current_app.root_path, event.image_path)):
-                    os.remove(os.path.join(current_app.root_path,"..", event.image_path))
+                    os.remove(os.path.join(current_app.root_path, "..", event.image_path))
 
                 # Save the new image
                 image_path = os.path.join("static/uploads/event_images", filename).replace("\\", "/")
                 with Image.open(file) as img:
-                    img.thumbnail((800, 800))
+                    img.thumbnail((800,800))
                     img.save(os.path.join(upload_folder, filename))
                 event.image_path = image_path
 
             db.session.commit()
-            print(f"event updated: {event}")
-            flash("Event successfully updated.", "info")
+
+            print("edit_event form submitted")
+            flash("Event updated successfully.", "info")
+            return redirect(url_for("events.event_details", event_id=event.id))
+
 
         except Exception as e:
             db.session.rollback()
             flash(f"Error during update of event: {str(e)}", "danger")
-
-
-    return render_template("event_details.html", event=event)
+    return render_template("edit_event.html", event=event)
 
 
 @events_bp.route("/create_event", methods=["POST", "GET"])
@@ -104,20 +130,46 @@ def event_details(event_id):
 def create_event():
     """ Create a new event """
 
-    form = EventForm()
-    print("create event: initiated")
+    event_form = EventForm()
 
-    if form.validate_on_submit():
+
+    if event_form.validate_on_submit():
     # if request.method == "POST":
-        print(request.form.items())
-        # print("create event: validated")
-        title = form.title.data
-        event_type = form.event_type.data
-        date = form.date.data
-        location = form.location.data
-        description = form.description.data
 
-        file = form.image.data
+        title = event_form.title.data
+        event_type = event_form.event_type.data
+        date = event_form.date.data
+
+        # location details
+        google_place_id = request.form.get("place_id")
+        name = request.form.get("name")
+        address = request.form.get("address")
+        latitude = request.form.get("latitude")
+        longitude = request.form.get("longitude")
+
+        print(f"""
+                google_place_id = {google_place_id}
+                location_name = {name}
+                location_address = {address}
+                location_latitude = {latitude}
+                location_longitude = {longitude}
+              """)
+
+        if google_place_id:
+            location = get_location(google_place_id)
+            if not location:
+                location = create_new_location(google_place_id, name, address, latitude, longitude)
+            
+            location_id = location.id
+            print(location)
+        else:
+            # error handling
+            location_id = 6
+
+
+        description = event_form.description.data
+
+        file = event_form.image.data
         image_path = None
 
         if file:
@@ -130,13 +182,13 @@ def create_event():
                 with Image.open(file) as img:
                     img.thumbnail((800,800))
                     img.save(os.path.join(upload_folder, filename))
-                print(f"File saved to: {image_path}")
+                # print(f"File saved to: {image_path}")
             except Exception as e:
-                print(f"Error saving file: {e}")
+                # print(f"Error saving file: {e}")
                 flash("Error while saving file.", "danger")
                 return redirect(url_for("events.create_event"))
             
-        create_new_event(title, event_type, date, location, description, current_user, image_path)
+        create_new_event(title, event_type, date, location_id, description, current_user, image_path)
 
         recipient = [current_user.email]
         subject = f"Event: {title} created"
@@ -148,7 +200,7 @@ def create_event():
 
         return redirect(url_for("events.home"))
 
-    return render_template("create_event.html", form=form)
+    return render_template("create_event.html", event_form=event_form)
 
 
 @events_bp.route("/register_for_event/<int:event_id>", methods=["GET"])
@@ -170,4 +222,4 @@ def delete_event(event_id):
     db.session.delete(event)
     db.session.commit()
     flash("Event deleted.", "info")
-    return redirect(url_for("events.home"))
+    return redirect(url_for("events.user_owned_events"))

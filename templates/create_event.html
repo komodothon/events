@@ -4,60 +4,165 @@
     Create Event
 {% endblock %}
 
-{% block header %}
-{% endblock %}
-
 {% block content %}
+<div class="bg-light d-flex align-items-center min-vh-100">
+    <div class="container d-flex justify-content-center">
+        <div class="card shadow-lg" style="max-width: 600px; width: 100%; position: relative;">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4">Create Event</h2>
+                <button type="button" class="btn-close" aria-label="Close" 
+                        style="position: absolute; top: 20px; right: 20px;" onclick="window.history.back();"></button>
 
-    <div class="bg-light d-flex align-items-center min-vh-100">
-        <div class="container d-flex justify-content-center">
-            <div class="caard shadow-lg" style="max-width: 600pc; width: 100%; position: relative;">
-                <div class="card-body p-5">
-                    <h2 class="text-center mb-4">Create Event</h2>
-                    <button type="button" class="btn-close" aria-label="Close" 
-                            style="position: absolute; top: 20px; right: 20px;" onclick="window.history.back();"></button>
+                <!-- Create Event Form -->
+                <form action="{{ url_for('events.create_event') }}" method="POST" enctype="multipart/form-data">
+                    {{ event_form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ event_form.title.label(class="form-label") }}
+                        {{ event_form.title(class="form-control") }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ event_form.event_type.label(class="form-label") }}
+                        {{ event_form.event_type(class="form-control") }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ event_form.date.label(class="form-label") }}
+                        {{ event_form.date(class="form-control") }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="autocomplete" class="form-label">Location</label><br>
+                        <input id="autocomplete" style="width: 400px;" type="text" placeholder="Enter a Location" required>
+
+                    </div>
+
+                    
+                    <div id="place-details" class="mt-3" style="display: none;">
+                        <h5>Selected Place Details</h5>
+                        <!-- Hidden fields for location details -->
+                        <input type="hidden" id="place-id" name="place_id">
+                        <input type="hidden" id="place-name" name="name">
+                        <input type="hidden" id="place-address" name="address">
+                        <input type="hidden" id="place-latitude" name="latitude">
+                        <input type="hidden" id="place-longitude" name="longitude">
+
+                    </div>
+
+                    
+                    <div id="map" style="height: 400px; width: 100%;" class="mb-3"></div>
 
 
-                    <!-- Create event form (Flaskform) -->
-                     <form action="{{ url_for('events.create_event') }}" method="POST" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ event_form.image.label(class="form-label") }}
+                        {{ event_form.image(class="form-control") }}
+                    </div>
 
-                            <div class="mb-3">
-                                {{ form.title.label(class="form-label") }}
-                                {{ form.title(class="form-control") }}
-                            </div>
+                    <div class="mb-3">
+                        {{ event_form.description.label(class="form-label") }}
+                        {{ event_form.description(class="form-control") }}
+                    </div>
 
-                            <div class="mb-3">
-                                {{ form.event_type.label(class="form-label") }}
-                                {{ form.event_type(class="form-control") }}
-                            </div>
-
-                            <div class="mb-3">
-                                {{ form.date.label(class="form-label") }}
-                                {{ form.date(class="form-control") }}
-                            </div>
-
-                            <div class="mb-3">
-                                {{ form.image.label(class="form-label") }}
-                                {{ form.image(class="form-control") }}
-                            </div>
-
-                            <div class="mb-3">
-                                {{ form.description.label(class="form-label") }}
-                                {{ form.description(class="form-control") }}
-                            </div>
-
-                            <div class="mb-3">
-                                {{ form.submit(class="btn btn-primary") }}
-                            </div>
-
-                        </div>
-                     </form>
-
-                </div>
+                    <div class="mb-3">
+                        {{ event_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
+
+
+
+<script>
+    let map, marker, autocomplete;
+
+    function initMap() {
+        console.log("Initializing map...");
+
+        // Default location (India)
+        const initialLocation = { lat: 20.5937, lng: 78.9629 };
+
+        // Create the map
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: initialLocation,
+            zoom: 8,
+            mapId: "DEMO_MAP_ID",
+        });
+
+        // Create the AdvancedMarkerElement
+        marker = new google.maps.marker.AdvancedMarkerElement({
+            map: map,
+            position: initialLocation,
+            title: "Selected Location",
+        });
         
+        initAutocomplete();
+        console.log("Map initialized.");
+    }
+
+    function updateMap(lat, lng) {
+        const location = { lat: parseFloat(lat), lng: parseFloat(lng) };
+
+        // Update map center and marker position
+        map.setCenter(location);
+        map.setZoom(15);
+        marker.position = location; // Update marker position
+    }
+
+    function initAutocomplete() {
+        // Create the autocomplete object
+        autocomplete = new google.maps.places.Autocomplete(
+            document.getElementById("autocomplete"), {
+                types: ["establishment"],
+                componentRestrictions: {'country': 'IN'},
+                fields: ["place_id", "name", "formatted_address", "geometry"],
+            }
+        );
+
+        // Add a listener to handle place selection
+        autocomplete.addListener("place_changed", onPlaceChanged);
+    }
+
+    function onPlaceChanged() {
+        const place = autocomplete.getPlace();
+
+        if (place.geometry) {
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+
+            // Display selected place details
+            document.getElementById("place-id").value = place.place_id || "N/A";
+            document.getElementById("place-name").value = place.name || "N/A";
+            document.getElementById("place-address").value = place.formatted_address || "N/A";
+            document.getElementById("place-latitude").value = lat;
+            document.getElementById("place-longitude").value = lng;
+
+            // Display the place details section
+            document.getElementById("place-details").style.display = "block";
+
+            console.log("Place selected: ", {
+                        google_place_id: place.place_id,
+                        name: place.name,
+                        address: place.formatted_address,
+                        latitude: lat,
+                        longitude: lng,
+
+                    });
+
+            // Update map and marker
+            updateMap(lat, lng);
+        }
+    }
+
+
+</script>
+
+<script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFRco5Dun0ig8Y-UXiZ9w289aI1LG72HE&loading=async&libraries=places,marker&callback=initMap">
+</script>
+
+
+
 {% endblock %}
